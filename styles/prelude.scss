@@ -1,0 +1,32 @@
+@import "colors";
+
+.TextMain {
+    font-family: "Cantarell";
+    font-size: medium;
+    color: $Text;
+}
+
+.TextSub {
+    font-family: "Cantarell";
+    font-size: smaller;
+    color: $TextDark;
+}
+
+.TextLarge {
+    font-size: 1.2rem;
+}
+
+@mixin Button($bg: $Background) {
+    background-color: $bg;
+    transition: all 0.1s ease;
+
+    &.Hover {
+        background-color: lighten($bg, 5%);
+    }
+
+    &.Click {
+        background-color: lighten($bg, 10%);
+    }
+}
+
+$BorderRadius: 0.5rem;
