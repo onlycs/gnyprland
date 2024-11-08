@@ -1,25 +1,25 @@
-@import '../colors';
+@import "../colors";
 
 @mixin BarHoverable() {
-	transition: all 0.05s ease;
+    transition: all 0.05s ease;
 
-	&.Hover {
-		background-color: transparentize($Foreground, 0.9);
-	}
+    &.Hover {
+        background-color: transparentize($Foreground, 0.9);
+    }
 }
 
 @mixin BarClickable() {
-	&.Click {
-		background-color: darken(transparentize($Foreground, 0.9), 20%);
-	}
+    &.Click {
+        background-color: darken(transparentize($Foreground, 0.9), 20%);
+    }
 }
 
-window#bar .Bar {
-	background-color: black;
-	padding: 0.35rem 0.5rem;
+.Bar {
+    background-color: black;
+    padding: 0.35rem 0.5rem;
 
-	@import 'prelude';
-	@import 'activewindow';
-	@import 'activeworkspace';
-	@import 'datetime';
+    @import "prelude";
+    @import "activewindow";
+    @import "activeworkspace";
+    @import "datetime";
 }

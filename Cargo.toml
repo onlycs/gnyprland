@@ -18,6 +18,9 @@ git = "https://github.com/onlycs/astal-rs"
 [dependencies.astal-io]
 git = "https://github.com/onlycs/astal-rs"
 
+[dependencies.astal-hyprland]
+git = "https://github.com/onlycs/astal-rs"
+
 [dependencies.gtk]
 git = "https://github.com/onlycs/gtk3-rs"
 

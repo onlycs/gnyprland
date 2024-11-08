@@ -1,26 +1,18 @@
-use astal::{
-    traits::{BoxExt, CenterBoxExt, WindowExt},
-    Box, CenterBox, Exclusivity, Label, Window, WindowAnchor,
-};
-use gtk::traits::{
-    BoxExt as GtkBoxExt, ContainerExt, LabelExt as GtkLabelExt, StyleContextExt, WidgetExt,
-};
-use widget::widget;
+mod window;
+
+use crate::prelude::*;
 
 pub fn bar() -> Window {
     widget! {
         Window {
-            widget_name: "bar",
+            name: "bar",
             anchor: WindowAnchor::Top + WindowAnchor::Right + WindowAnchor::Left,
             exclusivity: Exclusivity::Exclusive,
-            child: CenterBox {
-                child start_widget: bor Box {
+            child: opt CenterBox {
+                child start_widget: bor AstalBox {
                     spacing: 8,
                     children {
-                        Label {
-                            text: "Hello, World!",
-                            class_name: ["Bar"],
-                        }
+                        inh fun() window::ActiveWindow {}
                     }
                 }
             },

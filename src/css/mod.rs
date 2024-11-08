@@ -1,10 +1,9 @@
 pub mod error;
 
-use astal::{traits::ApplicationExt, Application};
+use crate::prelude::*;
 use async_std::{process::Command, stream::StreamExt, task};
 use error::{ReloadError, WatcherError};
 use futures::{channel::mpsc, SinkExt};
-use gtk::{traits::CssProviderExt, CssProvider};
 use notify::{EventKind, RecommendedWatcher, Watcher};
 use std::{
     path::Path,

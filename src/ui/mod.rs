@@ -1,12 +1,19 @@
 use astal::{traits::*, Application, Exclusivity, Label, Window, WindowAnchor};
 
-use gio::prelude::{ApplicationExt as GioApplicationExt, ApplicationExtManual};
+use astal_io::{functions::acquire_socket, traits::ApplicationExt};
+use gio::prelude::{ApplicationExt as GioApplicationExt, ApplicationExtManual, SocketListenerExt};
 use gtk::prelude::{ContainerExt, LabelExt};
 use gtk::{traits::*, CssProvider};
 
 static mut APP: Option<&'static Application> = None;
 
 mod bar;
+mod components;
+
+pub mod prelude {
+    pub use super::components::*;
+    pub use crate::ui;
+}
 
 pub fn run_blocking() {
     gtk::init().unwrap();
@@ -21,6 +28,8 @@ pub fn run_blocking() {
 
         unsafe { APP = Some(app) }
     });
+
+    app.acquire_socket().unwrap();
 
     app.run();
 }
