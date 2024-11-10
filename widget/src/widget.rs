@@ -83,8 +83,8 @@ pub struct Widget {
 
 impl Widget {
     pub fn add_mod(mut self, m: Modifier) -> Self {
-        if self.modifiers.len() == 0 {
-            self.modifiers.push(m);
+        if self.modifiers[0] == Modifier::Unset {
+            self.modifiers[0] = m;
         }
 
         self

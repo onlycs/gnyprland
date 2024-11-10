@@ -31,14 +31,20 @@ pub fn ActiveWindow() -> EventBox {
 
     widget! {
         fun(interactable::Props) Interactable {
-            child: opt Label {
-                bind label: hyprland.focused_client as Client
-                    map |client| {
-                        override_title(
-                            client.title().as_ref().map(GString::to_string).unwrap_or_default(),
-                            &ClientExt::class(&client).as_ref().map(GString::to_string).unwrap_or_default(),
-                        )
+            child: opt AstalBox {
+                children {
+                    Label {
+                        bind label: hyprland.focused_client as Client
+                            map |client| {
+                                override_title(
+                                    client.title().as_ref().map(GString::to_string).unwrap_or_default(),
+                                    &ClientExt::class(&client).as_ref().map(GString::to_string).unwrap_or_default(),
+                                )
+                            }
                     }
+                },
+                class_name: ["BarElement", "ActiveWindow"],
+                vertical: true,
             }
         }
     }

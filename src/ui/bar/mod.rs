@@ -14,9 +14,10 @@ pub fn bar() -> Window {
                     children {
                         inh fun() window::ActiveWindow {}
                     }
-                }
+                },
+                class_name: ["Bar"],
             },
-            class_name: ["Bar"],
+            monitor: 0,
         }
     }
 }

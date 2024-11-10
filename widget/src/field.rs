@@ -1,10 +1,9 @@
 use crate::widget::Modifier;
 use crate::Widget;
-use proc_macro::Ident;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::spanned::Spanned;
-use syn::{braced, Expr, ExprField, Member};
+use syn::{braced, Expr, Member};
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
