@@ -80,7 +80,7 @@ impl Parse for Field {
 
                 let mut maps = vec![];
 
-                while !input.is_empty() {
+                while input.peek(syn::Ident) {
                     let map = input.parse::<syn::Ident>()?;
 
                     if map != "map" {

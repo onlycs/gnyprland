@@ -16,6 +16,7 @@ fn get_title_transformer(class: &String) -> fn(String) -> String {
 fn override_class(class: String) -> String {
     match class.as_str() {
         "code-url-handler" => "vscode".to_string(),
+        "dev.zed.Zed" => "zed".to_string(),
         "" => "hyprland".to_string(),
         _ => class.clone(),
     }
@@ -40,7 +41,21 @@ pub fn ActiveWindow() -> EventBox {
                                     client.title().as_ref().map(GString::to_string).unwrap_or_default(),
                                     &ClientExt::class(&client).as_ref().map(GString::to_string).unwrap_or_default(),
                                 )
-                            }
+                            },
+                        class_name: ["TextMain"],
+                        max_width_chars: 10,
+                        truncate: true,
+                    },
+                    Label {
+                        bind label: hyprland.focused_client as Client
+                            map |client| {
+                                override_class(
+                                    ClientExt::class(&client).as_ref().map(GString::to_string).unwrap_or_default(),
+                                )
+                            },
+                        class_name: ["TextSub"],
+                        max_width_chars: 10,
+                        truncate: true,
                     }
                 },
                 class_name: ["BarElement", "ActiveWindow"],

@@ -1,0 +1,29 @@
+# This is a configuration file for the bacon tool
+#
+# Complete help on configuration: https://dystroy.org/bacon/config/
+#
+# You may check the current default at
+#   https://github.com/Canop/bacon/blob/main/defaults/default-bacon.toml
+
+default_job = "run-long"
+
+# Run your long-running application (eg server) and have the result displayed in bacon.
+# For programs that never stop (eg a server), `background` is set to false
+# to have the cargo run output immediately displayed instead of waiting for
+# program's end.
+# 'on_change_strategy' is set to `kill_then_restart` to have your program restart
+# on every change (an alternative would be to use the 'F5' key manually in bacon).
+# If you often use this job, it makes sense to override the 'r' key by adding
+# a binding `r = job:run-long` at the end of this file .
+[jobs.run-long]
+command = [
+    "cargo",
+    "run",
+    "--color",
+    "always",
+    # put launch parameters for your program behind a `--` separator
+]
+need_stdout = true
+allow_warnings = true
+background = false
+on_change_strategy = "kill_then_restart"

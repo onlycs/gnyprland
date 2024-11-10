@@ -1,5 +1,5 @@
 pub use astal::{
-    traits::{ApplicationExt, BoxExt, CenterBoxExt, EventBoxExt, WindowExt},
+    traits::{ApplicationExt, BoxExt, CenterBoxExt, EventBoxExt, LabelExt, WindowExt},
     Application, Box as AstalBox, CenterBox, EventBox, Exclusivity, Label, Window, WindowAnchor,
 };
 
