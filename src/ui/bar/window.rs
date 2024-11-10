@@ -1,3 +1,6 @@
+use astal_hyprland::{traits::ClientExt, Client, Hyprland};
+use glib::GString;
+
 use crate::prelude::*;
 
 fn get_title_transformer(class: &String) -> fn(String) -> String {
@@ -24,9 +27,19 @@ fn override_title(title: String, class: &String) -> String {
 
 #[allow(non_snake_case)]
 pub fn ActiveWindow() -> EventBox {
+    let hyprland = Hyprland::default().unwrap();
+
     widget! {
         fun(interactable::Props) Interactable {
-            child: opt Label {}
+            child: opt Label {
+                bind label: hyprland.focused_client as Client
+                    map |client| {
+                        override_title(
+                            client.title().as_ref().map(GString::to_string).unwrap_or_default(),
+                            &ClientExt::class(&client).as_ref().map(GString::to_string).unwrap_or_default(),
+                        )
+                    }
+            }
         }
     }
 }

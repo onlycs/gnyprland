@@ -6,7 +6,7 @@ pub fn bar() -> Window {
     widget! {
         Window {
             name: "bar",
-            anchor: WindowAnchor::Top + WindowAnchor::Right + WindowAnchor::Left,
+            anchor: WindowAnchor::TOP | WindowAnchor::LEFT | WindowAnchor::RIGHT,
             exclusivity: Exclusivity::Exclusive,
             child: opt CenterBox {
                 child start_widget: bor AstalBox {

@@ -8,5 +8,6 @@ pub use gtk::traits::{
     LabelExt as GtkLabelExt, StyleContextExt as GtkStyleContextExt, WidgetExt as GtkWidgetExt,
 };
 
+pub use crate::binding::BindExt;
 pub use crate::ui::prelude::*;
 pub use widget::widget;

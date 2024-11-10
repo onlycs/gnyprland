@@ -1,8 +1,10 @@
 use crate::widget::Modifier;
 use crate::Widget;
+use proc_macro::Ident;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::braced;
+use syn::spanned::Spanned;
+use syn::{braced, Expr, ExprField, Member};
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
@@ -15,6 +17,12 @@ pub enum Value {
     ClassName(syn::Expr),
     Child(Widget),
     Children(Punctuated<Widget, Token![,]>),
+    Mapping {
+        ty: syn::Type,
+        src: syn::Expr,
+        src_prop: syn::Ident,
+        maps: Vec<syn::Expr>,
+    },
 }
 
 #[derive(Clone)]
@@ -51,6 +59,45 @@ impl Parse for Field {
 
                 Value::Children(Punctuated::parse_terminated(&inner)?)
             }
+            "bind" => {
+                ident = input.parse()?;
+                input.parse::<Token![:]>()?;
+
+                let cast = input.parse::<syn::ExprCast>()?;
+                let src = *cast.expr;
+                let ty = *cast.ty;
+
+                let Expr::Field(src) = src else {
+                    return Err(syn::Error::new(src.span(), "expected field access"));
+                };
+
+                let lhs = *src.base;
+                let Member::Named(rhs) = src.member else {
+                    return Err(syn::Error::new(
+                        src.member.span(),
+                        "expected named field access",
+                    ));
+                };
+
+                let mut maps = vec![];
+
+                while !input.is_empty() {
+                    let map = input.parse::<syn::Ident>()?;
+
+                    if map != "map" {
+                        return Err(syn::Error::new(map.span(), "expected `map`"));
+                    }
+
+                    maps.push(input.parse()?);
+                }
+
+                Value::Mapping {
+                    ty,
+                    src: lhs,
+                    src_prop: rhs,
+                    maps,
+                }
+            }
             _ => {
                 input.parse::<Token![:]>()?;
                 Value::Expr(input.parse()?)
@@ -62,30 +109,52 @@ impl Parse for Field {
 }
 
 impl Field {
-    pub fn to_tokens(&self, builder_name: &syn::Ident) -> TokenStream {
+    pub fn to_tokens(&self, name: &syn::Ident) -> TokenStream {
         let ident_str = syn::Ident::new(&format!("set_{}", self.ident), self.ident.span());
 
-        match self.value {
-            Value::Expr(ref expr) => quote! { #builder_name . #ident_str ( #expr ); },
-            Value::ClassName(ref cn) => quote! {
+        match &self.value {
+            Value::Expr(expr) => quote! { #name.#ident_str(#expr); },
+            Value::ClassName(cn) => quote! {
                 for cn in #cn {
-                    #builder_name.style_context().add_class(cn);
+                    #name.style_context().add_class(cn);
                 }
             },
-            Value::Child(ref child) => {
-                quote! {
-                    #builder_name . #ident_str (#child);
-                }
-            }
-            Value::Children(ref children) => {
+            Value::Child(child) => quote! { #name.#ident_str(#child); },
+            Value::Children(children) => {
                 let children = children
                     .iter()
                     .cloned()
                     .map(|c| c.add_mod(Modifier::Inherited));
 
                 quote! {
-                    #builder_name . set_children(&[#( #children ),*]);
+                    #name.set_children(&[#( #children ),*]);
                 }
+            }
+            Value::Mapping {
+                src,
+                src_prop,
+                ty,
+                maps,
+            } => {
+                let src_prop = syn::LitStr::new(&src_prop.to_string(), src_prop.span());
+                let dest = quote! { #name };
+                let dest_prop = syn::LitStr::new(&self.ident.to_string(), self.ident.span());
+
+                let begin = quote! {
+                    #src.bind::<#ty>(#src_prop)
+                };
+
+                let maps = maps.iter().map(|m| {
+                    quote! {
+                        .transform(#m)
+                    }
+                });
+
+                let end = quote! {
+                    .bind(&#dest, #dest_prop);
+                };
+
+                quote! { #begin #(#maps)* #end; }
             }
         }
     }
@@ -93,11 +162,11 @@ impl Field {
     pub fn to_functional_tokens(&self) -> TokenStream {
         let ident = &self.ident;
 
-        match self.value {
-            Value::Expr(ref expr) => quote! { #ident : { #expr } },
-            Value::ClassName(ref cn) => quote! { #ident : { #cn } },
-            Value::Child(ref child) => quote! { #ident: { #child } },
-            Value::Children(ref children) => {
+        match &self.value {
+            Value::Expr(expr) => quote! { #ident : { #expr } },
+            Value::ClassName(cn) => quote! { #ident : { #cn } },
+            Value::Child(child) => quote! { #ident: { #child } },
+            Value::Children(children) => {
                 let children = children
                     .iter()
                     .cloned()
@@ -106,6 +175,32 @@ impl Field {
                 quote! {
                     #ident: {
                         &[#( #children ),*]
+                    }
+                }
+            }
+            Value::Mapping {
+                ty,
+                src,
+                src_prop,
+                maps,
+            } => {
+                let src_prop = syn::LitStr::new(&src_prop.to_string(), src_prop.span());
+
+                let begin = quote! {
+                    #src.bind::<#ty>(#src_prop)
+                };
+
+                let maps = maps.iter().map(|m| {
+                    quote! {
+                        .transform(|value| {
+                            (#m)(value)
+                        })
+                    }
+                });
+
+                quote! {
+                    #ident: {
+                        #begin #(#maps)*
                     }
                 }
             }

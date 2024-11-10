@@ -1,5 +1,6 @@
 #![feature(error_generic_member_access, let_chains, never_type, concat_idents)]
 
+pub mod binding;
 pub mod consts;
 pub mod css;
 pub mod prelude;
