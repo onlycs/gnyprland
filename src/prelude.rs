@@ -4,7 +4,7 @@ pub use astal::{
 };
 
 pub use astal_hyprland::{traits::*, Bind as HyprlandBind, Client, Hyprland, Workspace};
-pub use astal_io::{traits::VariableExt, Variable};
+pub use astal_io::{traits::VariableExt, Variable as AstalVariable};
 
 pub use gtk::{
     glib::ToValue,

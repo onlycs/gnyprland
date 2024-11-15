@@ -1,7 +1,3 @@
-use std::sync::Arc;
-
-use async_std::sync::Mutex;
-use glib::Pointer;
 use gtk::glib::ObjectExt;
 
 use crate::prelude::*;
@@ -11,7 +7,7 @@ pub struct ActiveWorkspaceProps {
 }
 
 pub struct OpenWindowsProps {
-    bitmask: Binding<'static, Variable, u32>,
+    bitmask: Binding<'static, Variable<u32>, u32>,
 }
 
 #[allow(non_snake_case)]
@@ -80,8 +76,6 @@ pub fn OpenWindows(OpenWindowsProps { bitmask }: OpenWindowsProps) -> AstalBox {
             classname.push("Windows");
         }
 
-        println!("{:?} {wksp}", classname);
-
         classname
             .into_iter()
             .map(str::to_string)
@@ -96,7 +90,7 @@ pub fn OpenWindows(OpenWindowsProps { bitmask }: OpenWindowsProps) -> AstalBox {
     widget! {
         AstalBox {
             children {
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[0]) },
+                AstalBox { bind class_name: bitmask.transform(bitmasks[0]) },
                 // AstalBox { apply class_name: bitmask.transform(bitmasks[1]) },
                 // AstalBox { apply class_name: bitmask.transform(bitmasks[2]) },
                 // AstalBox { apply class_name: bitmask.transform(bitmasks[3]) },
@@ -114,6 +108,17 @@ pub fn OpenWindows(OpenWindowsProps { bitmask }: OpenWindowsProps) -> AstalBox {
 #[allow(non_snake_case)]
 pub fn Workspace() -> EventBox {
     let hyprland = services::hyprland();
+    let bitmask = forever(Variable::new(0u32));
+
+    unsafe {
+        hyprland.connect_notify_unsafe(None, |hypr, _| {
+            let mask = hypr.workspaces().iter().fold(0u32, |mask, wk| {
+                mask | (wk.clients().len().max(1) << wk.id().max(1) - 1) as u32
+            });
+
+            bitmask.set(mask);
+        });
+    }
 
     widget! {
         fun(interactable::Props) Interactable {
@@ -127,6 +132,9 @@ pub fn Workspace() -> EventBox {
                             .transform(|wksp| wksp.id() - 1)
                             .transform(|id| id as u32),
                     },
+                    inh fun(OpenWindowsProps) OpenWindows {
+                        bitmask: bitmask.bind(),
+                    }
                 }
             }
         }

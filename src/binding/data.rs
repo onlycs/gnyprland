@@ -48,12 +48,12 @@ mod private {
 
     use super::*;
 
-    pub trait BindDest {
+    pub unsafe trait BindDest {
         fn set_notify(&self, prop: &str, value: Value);
         fn as_object(&self) -> &impl ObjectType;
     }
 
-    impl<O: ObjectType> BindDest for O {
+    unsafe impl<O: ObjectType> BindDest for O {
         fn set_notify(&self, prop: &str, value: Value) {
             self.set_property(prop, value);
             self.notify(prop);
@@ -64,7 +64,7 @@ mod private {
         }
     }
 
-    pub trait BindSource {
+    pub unsafe trait BindSource {
         fn connect(&self, prop: &str, cb: impl ValueConsumer);
         fn raw_bind(
             &self,
@@ -75,7 +75,7 @@ mod private {
         );
     }
 
-    impl<O: ObjectType> BindSource for O {
+    unsafe impl<O: ObjectType> BindSource for O {
         fn connect(&self, prop: &str, cb: impl ValueConsumer) {
             unsafe {
                 self.connect_notify_unsafe(Some(prop), move |obj, param| {
@@ -107,7 +107,7 @@ pub trait Bind: BindSource + Sized {
         &'a self,
         prop: &'a str,
     ) -> Binding<'a, Self, T> {
-        Binding::new(self, prop)
+        unsafe { Binding::new(self, prop) }
     }
 }
 
@@ -136,7 +136,7 @@ impl<'a, S, T> Clone for Binding<'a, S, T> {
 }
 
 impl<'a, S: BindSource, T> Binding<'a, S, T> {
-    fn new(object: &'a S, prop: &'a str) -> Self
+    pub unsafe fn new(object: &'a S, prop: &'a str) -> Self
     where
         T: for<'v> FromValue<'v> + 'static,
     {
