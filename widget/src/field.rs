@@ -3,6 +3,7 @@ use crate::Widget;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::braced;
+use syn::token::Brace;
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
@@ -17,8 +18,32 @@ pub enum BindKind {
 }
 
 #[derive(Clone)]
+pub struct ValueExpr {
+    setter: Option<syn::Ident>,
+    src: syn::Expr,
+}
+
+impl Parse for ValueExpr {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut setter = None;
+
+        if input.peek(Token![@]) {
+            input.parse::<Token![@]>()?;
+            setter = Some(input.parse()?);
+        }
+
+        input.parse::<Token![:]>()?;
+
+        Ok(Self {
+            setter,
+            src: input.parse()?,
+        })
+    }
+}
+
+#[derive(Clone)]
 pub enum Value {
-    Expr(syn::Expr),
+    Expr(ValueExpr),
     ClassName(syn::Expr),
     Child(Widget),
     Children(Punctuated<Widget, Token![,]>),
@@ -42,18 +67,26 @@ impl Parse for Field {
             }
             "name" => {
                 ident = syn::Ident::new("widget_name", ident.span());
-                input.parse::<Token![:]>()?;
                 Value::Expr(input.parse()?)
             }
-            "child" => {
+            "child" => 'ret: {
+                if input.peek(Token![@]) {
+                    break 'ret Value::Expr(input.parse()?);
+                }
+
                 if input.peek(syn::Ident) {
                     ident = input.parse()?;
                 }
 
                 input.parse::<Token![:]>()?;
+
                 Value::Child(input.parse::<Widget>()?.add_mod(Modifier::Optional))
             }
-            "children" => {
+            "children" => 'ret: {
+                if input.peek(Token![@]) || input.peek(Token![:]) {
+                    break 'ret Value::Expr(input.parse()?);
+                }
+
                 let inner;
                 braced!(inner in input);
 
@@ -73,10 +106,7 @@ impl Parse for Field {
 
                 Value::Binding { kind, src }
             }
-            _ => {
-                input.parse::<Token![:]>()?;
-                Value::Expr(input.parse()?)
-            }
+            _ => Value::Expr(input.parse()?),
         };
 
         Ok(Self { ident, value })
@@ -88,7 +118,10 @@ impl Field {
         let ident_str = syn::Ident::new(&format!("set_{}", self.ident), self.ident.span());
 
         match &self.value {
-            Value::Expr(expr) => quote! { #name.#ident_str(#expr); },
+            Value::Expr(ValueExpr { setter, src }) => match setter {
+                Some(setter) => quote! { #name.#setter(#src); },
+                None => quote! { #name.#ident_str(#src); },
+            },
             Value::ClassName(cn) => quote! {
                 for cn in #cn {
                     #name.style_context().add_class(cn);
@@ -128,7 +161,10 @@ impl Field {
         let ident = &self.ident;
 
         match &self.value {
-            Value::Expr(expr) => quote! { #ident : { #expr } },
+            Value::Expr(ValueExpr { setter, src }) => match setter {
+                Some(ident) => quote! { #ident : { #src } },
+                None => quote! { #ident : { #src } },
+            },
             Value::ClassName(cn) => quote! { #ident : { #cn } },
             Value::Child(child) => quote! { #ident: { #child } },
             Value::Binding { .. } => {

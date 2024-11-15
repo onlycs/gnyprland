@@ -2,7 +2,7 @@ use crate::field::Field;
 use quote::{quote, ToTokens};
 use syn::{
     braced, parenthesized,
-    parse::{Parse, ParseStream},
+    parse::{Parse, ParseBuffer, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
     Token,
@@ -88,6 +88,10 @@ impl Widget {
         }
 
         self
+    }
+
+    pub fn is(input: &ParseBuffer) -> bool {
+        input.fork().parse::<Self>().is_ok()
     }
 }
 

@@ -87,20 +87,14 @@ pub fn OpenWindows(OpenWindowsProps { bitmask }: OpenWindowsProps) -> AstalBox {
         .map(|id| move |mask| class_of(mask, id))
         .collect::<Vec<_>>();
 
+    let boxes = (0..10)
+        .into_iter()
+        .map(|id| widget! { inh AstalBox { bind class_name: bitmask.transform(bitmasks[id]) } })
+        .collect::<Vec<_>>();
+
     widget! {
         AstalBox {
-            children {
-                AstalBox { bind class_name: bitmask.transform(bitmasks[0]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[1]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[2]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[3]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[4]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[5]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[6]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[7]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[8]) },
-                // AstalBox { apply class_name: bitmask.transform(bitmasks[9]) },
-            }
+            children: boxes.as_slice()
         }
     }
 }
@@ -110,15 +104,13 @@ pub fn Workspace() -> EventBox {
     let hyprland = services::hyprland();
     let bitmask = forever(Variable::new(0u32));
 
-    unsafe {
-        hyprland.connect_notify_unsafe(None, |hypr, _| {
-            let mask = hypr.workspaces().iter().fold(0u32, |mask, wk| {
-                mask | (wk.clients().len().max(1) << wk.id().max(1) - 1) as u32
-            });
-
-            bitmask.set(mask);
+    hyprland.connect_event(|hypr, _, _| {
+        let mask = hypr.workspaces().iter().fold(0u32, |mask, wk| {
+            mask | (wk.clients().len().min(1) << wk.id().max(1) - 1) as u32
         });
-    }
+
+        bitmask.set(mask);
+    });
 
     widget! {
         fun(interactable::Props) Interactable {
