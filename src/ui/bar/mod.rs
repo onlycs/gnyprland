@@ -1,4 +1,5 @@
 mod window;
+mod workspace;
 
 use crate::prelude::*;
 
@@ -12,7 +13,8 @@ pub fn bar() -> Window {
                 child start_widget: bor AstalBox {
                     spacing: 8,
                     children {
-                        inh fun() window::ActiveWindow {}
+                        inh fun() window::ActiveWindow {},
+                        inh fun() workspace::Workspace {}
                     }
                 },
                 class_name: ["Bar"],

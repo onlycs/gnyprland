@@ -2,8 +2,7 @@ use crate::widget::Modifier;
 use crate::Widget;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::spanned::Spanned;
-use syn::{braced, Expr, Member};
+use syn::braced;
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
@@ -11,17 +10,19 @@ use syn::{
 };
 
 #[derive(Clone)]
+pub enum BindKind {
+    Normal,
+    Css,
+    ClassName,
+}
+
+#[derive(Clone)]
 pub enum Value {
     Expr(syn::Expr),
     ClassName(syn::Expr),
     Child(Widget),
     Children(Punctuated<Widget, Token![,]>),
-    Mapping {
-        ty: syn::Type,
-        src: syn::Expr,
-        src_prop: syn::Ident,
-        maps: Vec<syn::Expr>,
-    },
+    Binding { kind: BindKind, src: syn::Expr },
 }
 
 #[derive(Clone)]
@@ -62,40 +63,15 @@ impl Parse for Field {
                 ident = input.parse()?;
                 input.parse::<Token![:]>()?;
 
-                let cast = input.parse::<syn::ExprCast>()?;
-                let src = *cast.expr;
-                let ty = *cast.ty;
-
-                let Expr::Field(src) = src else {
-                    return Err(syn::Error::new(src.span(), "expected field access"));
+                let kind = match ident.to_string().as_str() {
+                    "css" => BindKind::Css,
+                    "class_name" => BindKind::ClassName,
+                    _ => BindKind::Normal,
                 };
 
-                let lhs = *src.base;
-                let Member::Named(rhs) = src.member else {
-                    return Err(syn::Error::new(
-                        src.member.span(),
-                        "expected named field access",
-                    ));
-                };
+                let src = input.parse()?;
 
-                let mut maps = vec![];
-
-                while input.peek(syn::Ident) {
-                    let map = input.parse::<syn::Ident>()?;
-
-                    if map != "map" {
-                        return Err(syn::Error::new(map.span(), "expected `map`"));
-                    }
-
-                    maps.push(input.parse()?);
-                }
-
-                Value::Mapping {
-                    ty,
-                    src: lhs,
-                    src_prop: rhs,
-                    maps,
-                }
+                Value::Binding { kind, src }
             }
             _ => {
                 input.parse::<Token![:]>()?;
@@ -129,31 +105,21 @@ impl Field {
                     #name.set_children(&[#( #children ),*]);
                 }
             }
-            Value::Mapping {
-                src,
-                src_prop,
-                ty,
-                maps,
-            } => {
-                let src_prop = syn::LitStr::new(&src_prop.to_string(), src_prop.span());
+            Value::Binding { src, kind } => {
                 let dest = quote! { #name };
                 let dest_prop = syn::LitStr::new(&self.ident.to_string(), self.ident.span());
 
-                let begin = quote! {
-                    #src.bind::<#ty>(#src_prop)
-                };
-
-                let maps = maps.iter().map(|m| {
-                    quote! {
-                        .transform(#m)
-                    }
-                });
-
-                let end = quote! {
-                    .bind(&#dest, #dest_prop);
-                };
-
-                quote! { #begin #(#maps)* #end; }
+                match kind {
+                    BindKind::Css => quote! {
+                        (#src).bind_css(&#dest);
+                    },
+                    BindKind::ClassName => quote! {
+                        (#src).bind_class_name(&#dest);
+                    },
+                    BindKind::Normal => quote! {
+                        (#src).bind(&#dest, #dest_prop);
+                    },
+                }
             }
         }
     }
@@ -165,6 +131,9 @@ impl Field {
             Value::Expr(expr) => quote! { #ident : { #expr } },
             Value::ClassName(cn) => quote! { #ident : { #cn } },
             Value::Child(child) => quote! { #ident: { #child } },
+            Value::Binding { .. } => {
+                quote! { compile_error!("Do not use the `bind` prefix in functional widgets") }
+            }
             Value::Children(children) => {
                 let children = children
                     .iter()
@@ -174,32 +143,6 @@ impl Field {
                 quote! {
                     #ident: {
                         &[#( #children ),*]
-                    }
-                }
-            }
-            Value::Mapping {
-                ty,
-                src,
-                src_prop,
-                maps,
-            } => {
-                let src_prop = syn::LitStr::new(&src_prop.to_string(), src_prop.span());
-
-                let begin = quote! {
-                    #src.bind::<#ty>(#src_prop)
-                };
-
-                let maps = maps.iter().map(|m| {
-                    quote! {
-                        .transform(|value| {
-                            (#m)(value)
-                        })
-                    }
-                });
-
-                quote! {
-                    #ident: {
-                        #begin #(#maps)*
                     }
                 }
             }

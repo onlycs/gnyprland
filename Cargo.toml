@@ -7,6 +7,8 @@ edition = "2021"
 async-std = { version = "1.13.0", features = ["attributes", "unstable"] }
 futures = "0.3.31"
 notify = "7.0.0"
+serde = "1.0.215"
+serde_json = "1.0.132"
 thiserror = { git = "https://github.com/onlycs/thiserror", version = "1.0.63" }
 
 [dependencies.astal]

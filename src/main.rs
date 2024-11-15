@@ -1,9 +1,17 @@
-#![feature(error_generic_member_access, let_chains, never_type, concat_idents)]
+#![feature(
+    error_generic_member_access,
+    let_chains,
+    never_type,
+    concat_idents,
+    trait_alias,
+    if_let_guard
+)]
 
 pub mod binding;
 pub mod consts;
 pub mod css;
 pub mod prelude;
+pub mod services;
 pub mod ui;
 
 use std::{backtrace::Backtrace, panic::Location};

@@ -1,9 +1,5 @@
-use astal::{traits::*, Application, Exclusivity, Label, Window, WindowAnchor};
-
-use astal_io::{functions::acquire_socket, traits::ApplicationExt};
-use gio::prelude::{ApplicationExt as GioApplicationExt, ApplicationExtManual, SocketListenerExt};
-use gtk::prelude::{ContainerExt, LabelExt};
-use gtk::{traits::*, CssProvider};
+use crate::prelude::*;
+use astal_io::traits::ApplicationExt;
 
 static mut APP: Option<&'static Application> = None;
 

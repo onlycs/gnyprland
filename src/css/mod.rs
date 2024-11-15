@@ -38,7 +38,7 @@ pub fn reload(app: &Application) -> Result<(), ReloadError> {
 }
 
 pub async fn watch(app: &'static Application) -> Result<!> {
-    task::block_on::<_, Result<()>>(recompile())?;
+    task::block_on(recompile())?;
     reload(app)?;
 
     let (mut tx, mut rx) = mpsc::unbounded();
@@ -70,7 +70,7 @@ pub async fn watch(app: &'static Application) -> Result<!> {
             timeout = Instant::now();
         }
 
-        task::block_on::<_, Result<()>>(recompile())?;
+        task::block_on(recompile())?;
         reload(app)?;
     }
 

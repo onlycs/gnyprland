@@ -127,7 +127,6 @@ impl ToTokens for Widget {
             quote! {
                 #name(#arg {
                     #(#fields,)*
-                    ..Default::default()
                 })
             }
         } else if let FunctionalData(Some(None)) = &self.func {
