@@ -1,9 +1,9 @@
-@import '../prelude';
+@import "../prelude";
 
 .BarElement {
-	@include BarHoverable();
+    @include BarHoverable();
 
-	padding: 0.15rem 1rem;
-	border-radius: 0.35rem;
-	background-color: transparent;
+    padding: 0.15rem 1rem;
+    border-radius: 0.35rem;
+    background-color: transparent;
 }

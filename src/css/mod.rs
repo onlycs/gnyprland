@@ -1,6 +1,7 @@
 pub mod error;
 
 use crate::prelude::*;
+use astal_obj::*;
 use async_std::{process::Command, stream::StreamExt, task};
 use error::{ReloadError, WatcherError};
 use futures::{channel::mpsc, SinkExt};

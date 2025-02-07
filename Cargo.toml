@@ -6,15 +6,13 @@ edition = "2021"
 [dependencies]
 async-std = { version = "1.13.0", features = ["attributes", "unstable"] }
 futures = "0.3.31"
+lazy_static = "1.5.0"
 notify = "7.0.0"
 serde = "1.0.215"
 serde_json = "1.0.132"
-thiserror = { git = "https://github.com/onlycs/thiserror", version = "1.0.63" }
+thiserror = { git = "https://github.com/onlycs/thiserror" }
 
 [dependencies.astal]
-git = "https://github.com/onlycs/astal-rs"
-
-[dependencies.astal-sys]
 git = "https://github.com/onlycs/astal-rs"
 
 [dependencies.astal-io]
@@ -32,12 +30,12 @@ git = "https://github.com/gtk-rs/gtk-rs-core"
 [dependencies.glib]
 git = "https://github.com/gtk-rs/gtk-rs-core"
 
-[dependencies.widget]
+[dependencies.macros]
 workspace = true
 
 [workspace]
-members = [".", "widget"]
+members = [".", "macros"]
 default-members = ["."]
 
-[workspace.dependencies.widget]
-path = "widget"
+[workspace.dependencies.macros]
+path = "macros"

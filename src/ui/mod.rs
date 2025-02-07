@@ -1,5 +1,6 @@
 use crate::prelude::*;
-use astal_io::traits::ApplicationExt;
+use astal_obj::*;
+use gtk_obj::*;
 
 static mut APP: Option<&'static Application> = None;
 

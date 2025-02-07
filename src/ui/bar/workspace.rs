@@ -1,17 +1,9 @@
-use gtk::glib::ObjectExt;
-
 use crate::prelude::*;
+use astal_obj::*;
+use gtk_obj::*;
 
-pub struct ActiveWorkspaceProps {
-    activeid: Binding<'static, Hyprland, u32>,
-}
-
-pub struct OpenWindowsProps {
-    bitmask: Binding<'static, Variable<u32>, u32>,
-}
-
-#[allow(non_snake_case)]
-pub fn ActiveWorkspace(ActiveWorkspaceProps { activeid }: ActiveWorkspaceProps) -> AstalBox {
+#[widget]
+pub fn ActiveWorkspace(activeid: Binding<'static, Hyprland, u32>) -> Widget {
     const W_DOT: u32 = 6;
     const W_SPACE: u32 = 6;
 
@@ -42,8 +34,8 @@ pub fn ActiveWorkspace(ActiveWorkspaceProps { activeid }: ActiveWorkspaceProps) 
         }
     };
 
-    widget! {
-        AstalBox {
+    render! {
+        inh AstalBox {
             class_name: ["SliderBox"],
             children {
                 AstalBox {
@@ -63,8 +55,8 @@ pub fn ActiveWorkspace(ActiveWorkspaceProps { activeid }: ActiveWorkspaceProps) 
     }
 }
 
-#[allow(non_snake_case)]
-pub fn OpenWindows(OpenWindowsProps { bitmask }: OpenWindowsProps) -> AstalBox {
+#[widget]
+pub fn OpenWindows(bitmask: Binding<'static, Variable<u32>, u32>) -> Widget {
     let class_of = |bitmask: u32, wksp: u32| {
         let mut classname = vec!["WorkspaceIndicator"];
 
@@ -89,18 +81,18 @@ pub fn OpenWindows(OpenWindowsProps { bitmask }: OpenWindowsProps) -> AstalBox {
 
     let boxes = (0..10)
         .into_iter()
-        .map(|id| widget! { inh AstalBox { bind class_name: bitmask.transform(bitmasks[id]) } })
+        .map(|id| render! { inh AstalBox { bind class_name: bitmask.transform(bitmasks[id]) } })
         .collect::<Vec<_>>();
 
-    widget! {
-        AstalBox {
+    render! {
+        inh AstalBox {
             children: boxes.as_slice()
         }
     }
 }
 
-#[allow(non_snake_case)]
-pub fn Workspace() -> EventBox {
+#[widget]
+pub fn Workspace() -> Widget {
     let hyprland = services::hyprland();
     let bitmask = forever(Variable::new(0u32));
 
@@ -112,19 +104,19 @@ pub fn Workspace() -> EventBox {
         bitmask.set(mask);
     });
 
-    widget! {
-        fun(interactable::Props) Interactable {
-            child: AstalBox {
+    render! {
+        inh fun Interactable {
+            child: inh AstalBox {
                 class_name: ["BarElement", "WorkspaceBox"],
                 vertical: true,
                 homogeneous: true,
                 children {
-                    inh fun(ActiveWorkspaceProps) ActiveWorkspace {
-                        activeid: hyprland.bind::<Workspace>("focused_workspace")
+                    inh fun ActiveWorkspace {
+                        activeid: hyprland.bind::<astal_hyprland::Workspace>("focused_workspace")
                             .transform(|wksp| wksp.id() - 1)
                             .transform(|id| id as u32),
                     },
-                    inh fun(OpenWindowsProps) OpenWindows {
+                    inh fun OpenWindows {
                         bitmask: bitmask.bind(),
                     }
                 }

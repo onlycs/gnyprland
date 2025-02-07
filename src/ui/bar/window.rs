@@ -1,7 +1,8 @@
-use astal_hyprland::{traits::ClientExt, Client};
 use glib::GString;
 
 use crate::prelude::*;
+use astal_obj::*;
+use gtk_obj::*;
 
 fn get_title_transformer(class: &String) -> fn(String) -> String {
     match class.as_str() {
@@ -26,13 +27,13 @@ fn override_title(title: String, class: &String) -> String {
     get_title_transformer(class)(title)
 }
 
-#[allow(non_snake_case)]
-pub fn ActiveWindow() -> EventBox {
+#[widget]
+pub fn ActiveWindow() -> Widget {
     let hyprland = services::hyprland();
 
-    widget! {
-        fun(interactable::Props) Interactable {
-            child: opt AstalBox {
+    render! {
+        inh fun Interactable {
+            child: inh AstalBox {
                 children {
                     Label {
                         bind label: hyprland.bind::<Client>("focused_client").transform(|client|
@@ -40,7 +41,7 @@ pub fn ActiveWindow() -> EventBox {
                                 client.title().as_ref().map(GString::to_string).unwrap_or_default(),
                                 &ClientExt::class(&client).as_ref().map(GString::to_string).unwrap_or_default(),
                             )
-                        ),
+                        ).or("Desktop"),
                         class_name: ["TextMain"],
                         max_width_chars: 10,
                         truncate: true,
@@ -50,7 +51,7 @@ pub fn ActiveWindow() -> EventBox {
                             override_class(
                                 ClientExt::class(&client).as_ref().map(GString::to_string).unwrap_or_default(),
                             )
-                        ),
+                        ).or("hyprland"),
                         class_name: ["TextSub"],
                         max_width_chars: 10,
                         truncate: true,

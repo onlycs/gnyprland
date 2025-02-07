@@ -1,10 +1,10 @@
-use std::{cell::UnsafeCell, marker::PhantomData, ops::Deref};
-
 use astal_io::traits::VariableBaseExt;
 use glib::value::FromValue;
 use gtk::glib::ObjectExt;
+use std::{cell::UnsafeCell, marker::PhantomData, ops::Deref};
 
 use crate::prelude::*;
+use astal_obj::*;
 
 pub struct Variable<T> {
     value: UnsafeCell<Value>,
@@ -23,6 +23,14 @@ impl<T> Variable<T> {
         Self {
             value: UnsafeCell::new(value),
             inner,
+            phantom: PhantomData,
+        }
+    }
+
+    pub unsafe fn from_astal(variable: astal_io::Variable) -> Self {
+        Self {
+            value: UnsafeCell::new(variable.value()),
+            inner: variable,
             phantom: PhantomData,
         }
     }
@@ -57,6 +65,8 @@ unsafe impl<T> BindSource for Variable<T> {
             let value = var.value();
             cb(&value).unwrap();
         });
+
+        self.inner.emit_changed();
     }
 
     fn raw_bind(
@@ -75,6 +85,8 @@ unsafe impl<T> BindSource for Variable<T> {
             .bind_property("value", dst.as_object(), dstprop)
             .transform_to(move |_, val| transform(val).ok())
             .build();
+
+        self.inner.emit_changed();
     }
 }
 

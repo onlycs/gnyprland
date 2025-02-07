@@ -7,12 +7,22 @@
     if_let_guard
 )]
 
+extern crate astal;
+extern crate astal_hyprland;
+extern crate astal_io;
+extern crate gio;
+extern crate glib;
+extern crate gtk;
+extern crate lazy_static;
+extern crate macros;
+
 pub mod binding;
 pub mod consts;
 pub mod css;
 pub mod prelude;
 pub mod services;
 pub mod ui;
+pub mod variables;
 
 use std::{backtrace::Backtrace, panic::Location};
 

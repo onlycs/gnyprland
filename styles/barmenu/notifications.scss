@@ -1,155 +1,163 @@
-@import '../prelude';
+@import "../prelude";
 
 $NotificationHeader: #969696;
 $Shadow: darken($BackdropBase, 5%);
 
 .NotificationsBox {
-	min-width: 30rem;
+    min-width: 30rem;
 
-	.Footer {
-		margin-top: 1rem;
+    .Footer {
+        margin-top: 1rem;
 
-		.Button {
-			@include Button();
+        .Button {
+            @include Button();
 
-			background-color: $Background;
-			min-width: 4rem;
-			margin-right: 1rem;
-		}
+            background-color: $Background;
+            min-width: 4rem;
+            margin-right: 1rem;
+        }
 
-		.DNDLabel {
-			font-weight: 700;
-			margin-left: 1rem;
-		}
+        .DNDLabel {
+            font-weight: 700;
+            margin-left: 1rem;
+        }
 
-		.Switch {
-			margin: 0.25rem 0.75rem;
-		}
-	}
+        .Switch {
+            margin: 0.25rem 0.75rem;
+        }
+    }
 
-	.Scrollbox {
-		min-width: 30rem;
+    .Scrollbox {
+        min-width: 30rem;
 
-		undershoot.top {
-			background: linear-gradient(to top, transparentize($Shadow, 1), $Shadow)
-		}
+        undershoot.top {
+            background: linear-gradient(
+                to top,
+                transparentize($Shadow, 1),
+                $Shadow
+            );
+        }
 
-		undershoot.bottom {
-			background: linear-gradient(to bottom, transparentize($Shadow, 1), $Shadow);
-		}
+        undershoot.bottom {
+            background: linear-gradient(
+                to bottom,
+                transparentize($Shadow, 1),
+                $Shadow
+            );
+        }
 
-		scrollbar,
-		scrollbar * {
-			all: unset;
-		}
+        scrollbar,
+        scrollbar * {
+            all: unset;
+        }
 
-		scrollbar,
-		scrollbar:hover {
-			background-color: transparent;
-		}
+        scrollbar,
+        scrollbar:hover {
+            background-color: transparent;
+        }
 
-		scrollbar slider {
-			border: none;
-			min-width: 0.5rem;
-			background-color: $Scrollbar;
-			border-radius: 1rem;
+        scrollbar slider {
+            border: none;
+            min-width: 0.5rem;
+            background-color: $Scrollbar;
+            border-radius: 1rem;
 
-			&:hover {
-				min-width: 0.5rem;
-				background-color: $ScrollbarHover;
-			}
+            &:hover {
+                min-width: 0.5rem;
+                background-color: $ScrollbarHover;
+            }
 
-			&:active {
-				min-width: 0.5rem;
-				background-color: $ScrollbarActive;
-			}
-		}
-	}
+            &:active {
+                min-width: 0.5rem;
+                background-color: $ScrollbarActive;
+            }
+        }
+    }
 
-	.Notifications .Notification {
-		padding: 0.8rem 0.9rem;
-		background-color: transparentize($BackdropFg, 0.9);
-		border-radius: 0.8rem;
-		margin-right: 1rem;
+    .Notifications .Notification {
+        padding: 0.8rem 0.9rem;
+        background-color: transparentize($BackdropFg, 0.9);
+        border-radius: 0.8rem;
+        margin-right: 1rem;
 
-		.Header {
-			.AppIcon {
-				margin-right: 0.4rem;
-				color: $NotificationHeader;
-			}
+        .Header {
+            .AppIcon {
+                margin-right: 0.4rem;
+                color: $NotificationHeader;
+            }
 
-			.AppName {
-				font-size: 1.05rem;
-				color: $NotificationHeader;
-				font-weight: 600;
-				margin-right: 0.5rem;
-			}
+            .AppName {
+                font-size: 1.05rem;
+                color: $NotificationHeader;
+                font-weight: 600;
+                margin-right: 0.5rem;
+            }
 
-			.Timestamp {
-				font-size: 0.85rem;
-				color: $NotificationHeader;
-				font-weight: 400;
-				margin-top: 0.25rem;
-			}
-		}
+            .Timestamp {
+                font-size: 0.85rem;
+                color: $NotificationHeader;
+                font-weight: 400;
+                margin-top: 0.25rem;
+            }
+        }
 
-		.Content {
-			.Image {
-				border: 1px solid rgba(40, 40, 40, 25);
-				border-radius: 0.75rem;
-				margin-right: 1rem;
-			}
+        .Content {
+            .Image {
+                border: 1px solid rgba(40, 40, 40, 25);
+                border-radius: 0.75rem;
+                margin-right: 1rem;
+            }
 
-			.Title {
-				@extend .TextMain;
+            .Title {
+                @extend .TextMain;
 
-				font-size: 1.1rem;
-				font-weight: 500;
-			}
+                font-size: 1.1rem;
+                font-weight: 500;
+            }
 
-			.Body {
-				@extend .TextMain;
-			}
+            .Body {
+                @extend .TextMain;
+            }
 
-			.TextBox {
-				margin-left: 0.25rem;
-				margin-bottom: 0.2rem;
-			}
-		}
+            .TextBox {
+                margin-left: 0.25rem;
+                margin-bottom: 0.2rem;
+            }
+        }
 
-		.Actions .Action {
-			padding: 0.5rem;
-			background-color: rgba(255, 255, 255, 0.05);
-			border-radius: 0;
-			border-right: 2px solid rgba(255, 255, 255, 0.05);
+        .Actions .Action {
+            padding: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 0;
+            border-right: 2px solid rgba(255, 255, 255, 0.05);
 
-			&:first-child {
-				border-top-left-radius: 0.75rem;
-				border-bottom-left-radius: 0.75rem;
-			}
+            &:first-child {
+                border-top-left-radius: 0.75rem;
+                border-bottom-left-radius: 0.75rem;
+            }
 
-			&:last-child {
-				border-top-right-radius: 0.75rem;
-				border-bottom-right-radius: 0.75rem;
-				border-right: none;
-			}
-		}
+            &:last-child {
+                border-top-right-radius: 0.75rem;
+                border-bottom-right-radius: 0.75rem;
+                border-right: none;
+            }
+        }
 
-		.Close {
-			border-radius: 5rem;
-			padding: 0rem 0.3rem;
-		}
-	}
+        .Close {
+            border-radius: 5rem;
+            padding: 0rem 0.3rem;
+        }
+    }
 
-	.Fallback {
-		.Icon {
-			color: darken($Text, 75%);
-		}
+    .Fallback {
+        .Icon {
+            color: darken($Text, 75%);
+        }
 
-		.Label {
-			color: $TextDark;
-			font-weight: 800;
-			font-size: 1.5rem;
-		}
-	}
+        .Label {
+            color: $TextDark;
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+    }
 }

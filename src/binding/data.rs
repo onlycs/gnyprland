@@ -1,14 +1,9 @@
 use crate::prelude::*;
 use glib::{value::FromValue, Value};
 use gtk::{glib::IsA, traits::CssProviderExt, CssProvider};
+use gtk_obj::*;
 use std::{
-    any::Any,
-    backtrace::Backtrace,
-    error::Error,
-    fmt::Debug,
-    marker::PhantomData,
-    mem::{self, MaybeUninit},
-    panic::Location,
+    any::Any, backtrace::Backtrace, error::Error, fmt::Debug, marker::PhantomData, panic::Location,
     sync::Arc,
 };
 use thiserror::Error;
@@ -84,6 +79,8 @@ mod private {
                     cb(&value).unwrap();
                 });
             }
+
+            self.notify(prop);
         }
 
         fn raw_bind(
@@ -96,6 +93,8 @@ mod private {
             self.bind_property(prop, dst.as_object(), dstprop)
                 .transform_to(move |_, value| transform(value).ok())
                 .build();
+
+            self.notify(prop);
         }
     }
 }
@@ -230,10 +229,12 @@ impl<'a, S: BindSource, T> Binding<'a, S, T> {
             });
     }
 
-    pub fn or(&self, data: T) -> Self
+    pub fn or(&self, data: impl Into<T>) -> Self
     where
         T: Send + Sync + Clone + 'static,
     {
+        let data = data.into();
+
         Self {
             or_else: Arc::new(move || Some(data.clone())),
             ..self.clone()

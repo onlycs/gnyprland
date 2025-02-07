@@ -1,9 +1,8 @@
-use crate::widget::Modifier;
+use crate::render::widget::Modifier;
 use crate::Widget;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::braced;
-use syn::token::Brace;
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
@@ -47,6 +46,7 @@ pub enum Value {
     ClassName(syn::Expr),
     Child(Widget),
     Children(Punctuated<Widget, Token![,]>),
+    Closure(syn::ExprClosure),
     Binding { kind: BindKind, src: syn::Expr },
 }
 
@@ -80,7 +80,7 @@ impl Parse for Field {
 
                 input.parse::<Token![:]>()?;
 
-                Value::Child(input.parse::<Widget>()?.add_mod(Modifier::Optional))
+                Value::Child(input.parse::<Widget>()?)
             }
             "children" => 'ret: {
                 if input.peek(Token![@]) || input.peek(Token![:]) {
@@ -105,6 +105,10 @@ impl Parse for Field {
                 let src = input.parse()?;
 
                 Value::Binding { kind, src }
+            }
+            "with" => {
+                input.parse::<Token![:]>()?;
+                Value::Closure(input.parse()?)
             }
             _ => Value::Expr(input.parse()?),
         };
@@ -154,6 +158,9 @@ impl Field {
                     },
                 }
             }
+            Value::Closure(closure) => quote! {
+                (#closure)(&#name);
+            },
         }
     }
 
@@ -181,6 +188,9 @@ impl Field {
                         &[#( #children ),*]
                     }
                 }
+            }
+            Value::Closure(_) => {
+                quote! { compile_error!("Do not use the `with` prefix in functional widgets") }
             }
         }
     }

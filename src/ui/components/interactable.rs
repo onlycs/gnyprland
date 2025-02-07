@@ -1,17 +1,12 @@
-use gtk::glib::IsA;
-
 use crate::consts;
 use crate::prelude::*;
+use astal_obj::*;
+use gtk_obj::*;
 
-#[derive(Default)]
-pub struct Props<'a, W: IsA<gtk::Widget>> {
-    pub child: Option<&'a W>,
-}
-
-#[allow(non_snake_case)]
-pub fn Interactable<'a, W: IsA<gtk::Widget>>(props: Props<'a, W>) -> EventBox {
+#[widget]
+pub fn Interactable(child: gtk::Widget) -> EventBox {
     let event_box = EventBox::new();
-    event_box.set_child(props.child);
+    event_box.set_child(Some(&child));
 
     event_box.connect_hover(|b, _| {
         b.children()[0]
@@ -37,5 +32,5 @@ pub fn Interactable<'a, W: IsA<gtk::Widget>>(props: Props<'a, W>) -> EventBox {
             .remove_class(consts::ACTIVE_CLASS)
     });
 
-    event_box
+    event_box.into()
 }

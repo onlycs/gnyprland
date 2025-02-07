@@ -1,8 +1,8 @@
 .DateTime {
-	margin: 6px 0;
+    margin: 6px 0;
 }
 
 .DateTimeBox {
-	@include BarClickable();
-	min-width: 16.5rem;
+    @include BarClickable();
+    min-width: 16.5rem;
 }

@@ -1,41 +1,12 @@
-use crate::field::Field;
+use crate::render::field::Field;
 use quote::{quote, ToTokens};
 use syn::{
-    braced, parenthesized,
-    parse::{Parse, ParseBuffer, ParseStream},
+    braced,
+    parse::{Parse, ParseStream},
     punctuated::Punctuated,
     spanned::Spanned,
     Token,
 };
-
-#[derive(Clone)]
-pub struct FunctionalData(Option<Option<syn::Path>>);
-
-impl Parse for FunctionalData {
-    fn parse(input: ParseStream) -> syn::Result<Self> {
-        let fork = input.fork();
-
-        let Ok(ident) = fork.parse::<syn::Ident>() else {
-            return Ok(Self(None));
-        };
-
-        if ident.to_string() != "fun" {
-            return Ok(Self(None));
-        } else {
-            drop(fork);
-            input.parse::<syn::Ident>()?;
-        }
-
-        let inner;
-        parenthesized!(inner in input);
-
-        if inner.is_empty() {
-            return Ok(Self(Some(None)));
-        }
-
-        Ok(Self(Some(Some(inner.parse()?))))
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Modifier {
@@ -77,8 +48,8 @@ impl Parse for Modifier {
 pub struct Widget {
     modifiers: Vec<Modifier>,
     name: syn::Path,
+    functional: bool,
     fields: Punctuated<Field, syn::Token![,]>,
-    func: FunctionalData,
 }
 
 impl Widget {
@@ -89,15 +60,12 @@ impl Widget {
 
         self
     }
-
-    pub fn is(input: &ParseBuffer) -> bool {
-        input.fork().parse::<Self>().is_ok()
-    }
 }
 
 impl Parse for Widget {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let mut modifiers = vec![];
+        let mut functional = false;
 
         // if some and unset break
         // else allow
@@ -105,17 +73,32 @@ impl Parse for Widget {
             modifiers.push(input.parse()?);
         }
 
-        let func = input.parse()?;
+        if input.peek(syn::Ident) {
+            let fork = input.fork();
+            let fun = fork.parse::<syn::Ident>()?;
+
+            if fun == "fun" {
+                functional = true;
+                input.parse::<syn::Ident>()?;
+            }
+        }
+
         let name = input.parse::<syn::Path>()?;
-        let inner;
-        braced!(inner in input);
-        let fields = Punctuated::<Field, Token![,]>::parse_terminated(&inner)?;
+
+        let fields = match input.is_empty() || input.peek(Token![,]) {
+            true => Punctuated::new(),
+            false => {
+                let inner;
+                braced!(inner in input);
+                Punctuated::<Field, Token![,]>::parse_terminated(&inner)?
+            }
+        };
 
         Ok(Self {
             modifiers,
             name,
             fields,
-            func,
+            functional,
         })
     }
 }
@@ -125,16 +108,16 @@ impl ToTokens for Widget {
         let name = &self.name;
         let var_ident = syn::Ident::new("widget", name.span());
 
-        let mut body = if let FunctionalData(Some(Some(arg))) = &self.func {
+        let mut body = if self.functional && self.fields.len() != 0 {
             let fields = self.fields.iter().map(|f| f.to_functional_tokens());
 
             quote! {
-                #name(#arg {
+                #name::widget(#name::Props {
                     #(#fields,)*
                 })
             }
-        } else if let FunctionalData(Some(None)) = &self.func {
-            quote! { #name() }
+        } else if self.functional {
+            quote! { #name::widget() }
         } else {
             let fields = self.fields.iter().map(|f| f.to_tokens(&var_ident));
 

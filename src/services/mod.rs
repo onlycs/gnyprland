@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use astal_obj::*;
 
 macro_rules! service {
     ($init:expr, $ty:ty, $name:ident) => {
