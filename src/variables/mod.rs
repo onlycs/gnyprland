@@ -10,8 +10,8 @@ macro_rules! lateinit {
             unsafe {
                 if $static.is_none() {
                     $static = Some(Variable::from_astal(
-                        AstalVariable::new(&mut Value::from("".to_string()))
-                            .pollv(1000, &[$command], None)
+                        AstalVariable::new(Box::leak(Box::new(Value::from("".to_string()))))
+                            .pollv(1000, $command, None)
                             .unwrap(),
                     ));
                 }
@@ -27,6 +27,6 @@ macro_rules! lateinit {
 }
 
 lateinit!(
-    DATE, date, r#"date +"%A, %b %d""#;
-    TIME, time, r#"date +"%l:%M %p""#
+    DATE, date, &["date", "+%A, %b %d"];
+    TIME, time, &["date", "+%-l:%M %p"]
 );

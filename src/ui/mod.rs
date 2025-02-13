@@ -15,19 +15,18 @@ pub mod prelude {
 pub fn run_blocking() {
     gtk::init().unwrap();
 
-    let app = Box::leak(Box::new(Application::new()));
+    let app_id = ggc::put(Application::new());
+    let app = ggc::get(&app_id);
 
-    app.connect_activate(|_app| {
+    app.connect_activate(|_| {
         let window = bar::bar();
 
-        _app.add_window(&window);
+        app.add_window(&window);
         window.show_all();
-
         unsafe { APP = Some(app) }
     });
 
     app.acquire_socket().unwrap();
-
     app.run();
 }
 

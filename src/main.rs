@@ -19,6 +19,7 @@ extern crate macros;
 pub mod binding;
 pub mod consts;
 pub mod css;
+pub mod ggc;
 pub mod prelude;
 pub mod services;
 pub mod ui;

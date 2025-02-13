@@ -29,6 +29,7 @@ pub mod gtk_obj {
 pub use glib::Value;
 
 pub use crate::binding::*;
+pub use crate::ggc;
 pub use crate::services;
 pub use crate::ui::prelude::*;
 pub use crate::variables;

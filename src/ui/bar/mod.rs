@@ -21,8 +21,8 @@ pub fn bar() -> Window {
                     }
                 },
                 class_name: ["Bar"],
-                with: |widget| {
-                    CenterBoxExt::set_center_widget(widget, &datetime::DateTime::widget());
+                with: |widget: &&'static mut CenterBox| {
+                    CenterBoxExt::set_center_widget(&**widget, &datetime::DateTime::widget());
                 },
             },
             monitor: 0,

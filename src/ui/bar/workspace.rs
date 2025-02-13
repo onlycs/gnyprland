@@ -39,7 +39,7 @@ pub fn ActiveWorkspace(activeid: Binding<'static, Hyprland, u32>) -> Widget {
             class_name: ["SliderBox"],
             children {
                 AstalBox {
-                    class_name: ["SliderSegment"],
+                    class_name: ["SliderSegment", "First"],
                     bind css: activeid.transform(class_before),
                 },
                 AstalBox {
@@ -47,7 +47,7 @@ pub fn ActiveWorkspace(activeid: Binding<'static, Hyprland, u32>) -> Widget {
                     bind css: activeid.transform(class_current),
                 },
                 AstalBox {
-                    class_name: ["SliderSegment"],
+                    class_name: ["SliderSegment", "Last"],
                     bind css: activeid.transform(class_after),
                 },
             }

@@ -72,8 +72,8 @@ unsafe impl<T> BindSource for Variable<T> {
     fn raw_bind(
         &self,
         prop: &str,
-        dst: &impl BindDest,
-        dstprop: &str,
+        dst: &'static impl BindDest,
+        dstprop: &'static str,
         transform: impl ValueTransformer,
     ) {
         assert_eq!(
@@ -81,10 +81,14 @@ unsafe impl<T> BindSource for Variable<T> {
             "Binding with `Variable` must be initialized with `Variable::bind`"
         );
 
-        self.inner
-            .bind_property("value", dst.as_object(), dstprop)
-            .transform_to(move |_, val| transform(val).ok())
-            .build();
+        self.inner.connect_changed(move |var| {
+            let value = var.value();
+            let t: Option<Value> = transform(&value).ok();
+
+            if let Some(t) = t {
+                dst.as_object().set_property(dstprop, t);
+            }
+        });
 
         self.inner.emit_changed();
     }

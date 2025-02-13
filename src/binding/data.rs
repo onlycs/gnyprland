@@ -64,8 +64,8 @@ mod private {
         fn raw_bind(
             &self,
             prop: &str,
-            dst: &impl BindDest,
-            dstprop: &str,
+            dst: &'static impl BindDest,
+            dstprop: &'static str,
             transform: impl ValueTransformer,
         );
     }
@@ -251,7 +251,7 @@ impl<'a, S: BindSource, T> Binding<'a, S, T> {
         }
     }
 
-    pub fn bind(&self, other: &'a impl BindDest, other_prop: &'a str)
+    pub fn bind(&self, other: &'static impl BindDest, other_prop: &'static str)
     where
         T: Into<Value> + 'static,
     {

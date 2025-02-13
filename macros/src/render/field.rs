@@ -148,13 +148,13 @@ impl Field {
 
                 match kind {
                     BindKind::Css => quote! {
-                        (#src).bind_css(&#dest);
+                        (#src).bind_css(#dest);
                     },
                     BindKind::ClassName => quote! {
-                        (#src).bind_class_name(&#dest);
+                        (#src).bind_class_name(#dest);
                     },
                     BindKind::Normal => quote! {
-                        (#src).bind(&#dest, #dest_prop);
+                        (#src).bind(#dest, #dest_prop);
                     },
                 }
             }
