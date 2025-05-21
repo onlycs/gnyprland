@@ -123,7 +123,7 @@ impl ToTokens for Widget {
 
             quote! {{
                 #[allow(non_snake_case)]
-                let #var_ident = ggc::get(&ggc::put(#name::default()));
+                let #var_ident = ggc::get_static(&ggc::put(#name::default()));
                 #(#fields);*
                 #var_ident.clone()
             }}

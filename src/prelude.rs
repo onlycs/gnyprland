@@ -34,11 +34,3 @@ pub use crate::services;
 pub use crate::ui::prelude::*;
 pub use crate::variables;
 pub use macros::*;
-
-pub fn forever<T>(obj: T) -> &'static T {
-    Box::leak(Box::new(obj))
-}
-
-pub fn forever_mut<T>(obj: T) -> &'static mut T {
-    Box::leak(Box::new(obj))
-}

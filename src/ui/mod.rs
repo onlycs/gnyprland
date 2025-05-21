@@ -16,7 +16,7 @@ pub fn run_blocking() {
     gtk::init().unwrap();
 
     let app_id = ggc::put(Application::new());
-    let app = ggc::get(&app_id);
+    let app = ggc::get_static(&app_id);
 
     app.connect_activate(|_| {
         let window = bar::bar();

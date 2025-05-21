@@ -1,5 +1,9 @@
+use std::{os::raw::c_void, ptr};
+
 use crate::prelude::*;
 use astal_obj::*;
+use glib::gobject_ffi::{g_signal_connect_closure, GObject};
+use gtk::DrawingArea;
 use gtk_obj::*;
 
 #[widget]
@@ -34,22 +38,19 @@ pub fn ActiveWorkspace(activeid: Binding<'static, Hyprland, u32>) -> Widget {
         }
     };
 
+    let mut drawing = DrawingArea::new();
+
+    drawing.bind("draw").connect(move |cr: Value| {
+        println!("Drawing {cr:?}");
+    });
+
     render! {
         inh AstalBox {
             class_name: ["SliderBox"],
             children {
-                AstalBox {
-                    class_name: ["SliderSegment", "First"],
-                    bind css: activeid.transform(class_before),
-                },
-                AstalBox {
-                    class_name: ["SliderSegment", "Current"],
-                    bind css: activeid.transform(class_current),
-                },
-                AstalBox {
-                    class_name: ["SliderSegment", "Last"],
-                    bind css: activeid.transform(class_after),
-                },
+                DrawingArea {
+
+                }
             }
         }
     }
@@ -94,14 +95,15 @@ pub fn OpenWindows(bitmask: Binding<'static, Variable<u32>, u32>) -> Widget {
 #[widget]
 pub fn Workspace() -> Widget {
     let hyprland = services::hyprland();
-    let bitmask = forever(Variable::new(0u32));
+    let bitmask_id = ggc::put(Variable::new(0u32));
+    let bitmask_ref = ggc::get_static(&bitmask_id);
 
-    hyprland.connect_event(|hypr, _, _| {
+    hyprland.connect_event(move |hypr, _, _| {
         let mask = hypr.workspaces().iter().fold(0u32, |mask, wk| {
             mask | (wk.clients().len().min(1) << wk.id().max(1) - 1) as u32
         });
 
-        bitmask.set(mask);
+        bitmask_id.set(mask);
     });
 
     render! {
@@ -117,7 +119,7 @@ pub fn Workspace() -> Widget {
                             .transform(|id| id as u32),
                     },
                     inh fun OpenWindows {
-                        bitmask: bitmask.bind(),
+                        bitmask: bitmask_ref.bind(),
                     }
                 }
             }

@@ -17,8 +17,7 @@ async fn recompile() -> Result<()> {
     let output = Command::new("sass")
         .args(&["styles/index.scss", "/tmp/ags/index.css"])
         .output()
-        .await
-        .unwrap();
+        .await?;
 
     match output.status.code() {
         Some(0) => println!("Successfully compiled styles"),

@@ -271,16 +271,16 @@ impl<'a, S: BindSource, T> Binding<'a, S, T> {
 
 impl<'a, S: BindSource> Binding<'a, S, String> {
     pub fn bind_css(self, widget: &'a impl IsA<gtk::Widget>) {
-        let provider = forever(CssProvider::new());
+        let provider = ggc::put(CssProvider::new());
 
         widget
             .style_context()
-            .add_provider(provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
+            .add_provider(&*provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
 
         // SAFETY: provider lives for 'static, so does widget
         unsafe {
             self.connect_unsafe(move |css| {
-                provider
+                ggc::get_static(&provider)
                     .load_from_data(format!("* {{ {} }}", css).as_bytes())
                     .unwrap();
             });

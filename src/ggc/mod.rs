@@ -3,63 +3,28 @@ use std::{
     collections::HashMap,
     marker::PhantomData,
     ops::{Deref, DerefMut},
-    sync::{
-        atomic::{self, AtomicUsize},
-        Arc,
-    },
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Id<T> {
     id: u64,
-    refs: Arc<AtomicUsize>,
     _ty: PhantomData<T>,
 }
 
 unsafe impl<T> Send for Id<T> {}
 unsafe impl<T> Sync for Id<T> {}
 
-impl<T> Clone for Id<T> {
-    fn clone(&self) -> Self {
-        self.refs.fetch_add(1, atomic::Ordering::Relaxed);
-
-        Self {
-            id: self.id,
-            refs: Arc::clone(&self.refs),
-            _ty: PhantomData,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct Container<T> {
-    ptr: *mut dyn Any,
-    _ph: PhantomData<T>,
-}
-
-impl<T> Deref for Container<T> {
+impl<T: 'static> Deref for Id<T> {
     type Target = T;
 
-    fn deref(&self) -> &Self::Target {
-        unsafe {
-            let ptr = self.ptr as *const T;
-            &*ptr
-        }
+    fn deref<'a>(&'a self) -> &'a Self::Target {
+        get_static(self)
     }
 }
 
-impl<T> DerefMut for Container<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        unsafe {
-            let ptr = self.ptr as *mut T;
-            &mut *ptr
-        }
-    }
-}
-
-impl<T> Drop for Id<T> {
-    fn drop(&mut self) {
-        self.refs.fetch_sub(1, atomic::Ordering::Relaxed);
+impl<T: 'static> DerefMut for Id<T> {
+    fn deref_mut<'a>(&'a mut self) -> &'a mut Self::Target {
+        get_static(self)
     }
 }
 
@@ -89,12 +54,11 @@ pub fn put<T: 'static>(data: T) -> Id<T> {
 
     Id {
         id: u,
-        refs: Arc::new(AtomicUsize::new(1)),
         _ty: PhantomData,
     }
 }
 
-pub fn get<T: 'static>(id: &Id<T>) -> &'static mut T {
+pub fn get_static<T: 'static>(id: &Id<T>) -> &'static mut T {
     let any = get_ggc().get(&id.id).unwrap();
     unsafe { &mut *(*any as *mut T) }
 }

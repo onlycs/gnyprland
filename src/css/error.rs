@@ -30,4 +30,12 @@ pub enum WatcherError {
         location: &'static Location<'static>,
         backtrace: Backtrace,
     },
+
+    #[error("At {location}: IO error:\n{source}")]
+    IoError {
+        #[from]
+        source: std::io::Error,
+        location: &'static Location<'static>,
+        backtrace: Backtrace,
+    },
 }
