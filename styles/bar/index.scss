@@ -1,25 +1,12 @@
-@import "../colors";
+@use "sass:color";
+@use "sass:meta";
 
-@mixin BarHoverable() {
-    transition: all 0.05s ease;
-
-    &.Hover {
-        background-color: transparentize($Foreground, 0.9);
-    }
-}
-
-@mixin BarClickable() {
-    &.Click {
-        background-color: darken(transparentize($Foreground, 0.9), 20%);
-    }
-}
+@use "../colors";
+@use "prelude";
 
 .Bar {
-    background-color: black;
-    padding: 0.35rem 0.5rem;
+    background-color: colors.$Backdrop;
+    padding: 0.35rem 0.35rem;
 
-    @import "prelude";
-    @import "activewindow";
-    @import "activeworkspace";
-    @import "datetime";
+    @include meta.load-css("activewindow");
 }

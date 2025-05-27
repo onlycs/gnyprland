@@ -1,7 +1,10 @@
-@import "../prelude";
+@use "sass:color";
+@use "sass:meta";
+@use "../prelude";
+@use "../colors";
 
 window#barmenu .BarMenuBox {
-    background-color: darken($BackdropBase, 5%);
+    background-color: color.adjust(colors.$BackdropBase, $lightness: -5%);
     padding: 1rem;
     border-radius: 1rem;
     margin-top: 0.75rem;
@@ -9,6 +12,6 @@ window#barmenu .BarMenuBox {
     min-height: 52.5rem;
     border: 2px solid rgba(40, 40, 40, 25);
 
-    @import "./notifications";
-    @import "./datemenu";
+    @include meta.load-css("notifications");
+    @include meta.load-css("datemenu");
 }

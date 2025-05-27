@@ -1,37 +1,21 @@
-$SelectedBg: darken(#3584e4, 20%);
+@use "sass:color";
+
+$Backdrop: #000000;
+$Background: #242424;
+$Card1: color.adjust($Background, $lightness: 5%);
+$Card2: color.adjust($Card1, $lightness: 5%);
 
 $Text: #fff;
-$TextDark: darken($Text, 60%);
+$TextDark: #77767b;
 
-$Foreground: #eeeeec;
-$Background: darken(desaturate(#3d3846, 100%), 4%);
-$Base: lighten(desaturate(#241f31, 100%), 2%);
-$Border: darken($Background, 10%);
+@function hover($color) {
+    @return color.adjust($color, $lightness: 3%);
+}
 
-$Scrollbar: darken(mix($Foreground, $Background, 60%), 25%);
-$ScrollbarHover: lighten($Scrollbar, 10%);
-$ScrollbarActive: darken($ScrollbarHover, 15%);
+@function click($color) {
+    @return color.adjust($color, $lightness: 7.5%);
+}
 
-$Warning: #f57900;
-$Error: #cc0000;
-$Success: darken(#33d17a, 10%);
-$Destructive: darken(#e01b24, 10%);
-
-$OsdFg: #eeeeec;
-$OsdBg: transparentize(darken(desaturate(#3d3846, 100%), 10%), 0.3);
-$OsdInsensitiveFg: mix($OsdFg, opacify($OsdBg, 1), 50%);
-$OsdInsensitiveBg: transparentize(mix($OsdFg, opacify($OsdBg, 1), 10%), 0.5);
-$OsdText: #fff;
-
-$BackdropFg: mix($Foreground, $Background, 50%);
-$BackdropBg: $Background;
-$BackdropBase: lighten($Base, 1%);
-$BackdropText: mix($Text, $BackdropBase, 80%);
-$BackdropBorder: mix($Foreground, $BackdropBg, 50%);
-
-$BackdropInsensitive: lighten($BackdropBg, 15%);
-$BackdropSelectedFg: $BackdropText;
-$BackdropSelectedBg: transparentize(desaturate($SelectedBg, 100%), 0.5);
-
-$Layer1: lighten($Background, 2%);
-$Layer2: lighten($Background, 6%);
+@function open($color) {
+    @return color.adjust($color, $lightness: 5%);
+}

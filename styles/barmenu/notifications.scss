@@ -1,7 +1,9 @@
-@import "../prelude";
+@use "sass:color";
+@use "../prelude";
+@use "../colors";
 
 $NotificationHeader: #969696;
-$Shadow: darken($BackdropBase, 5%);
+$Shadow: color.adjust(colors.$BackdropBase, $lightness: -5%);
 
 .NotificationsBox {
     min-width: 30rem;
@@ -10,9 +12,9 @@ $Shadow: darken($BackdropBase, 5%);
         margin-top: 1rem;
 
         .Button {
-            @include Button();
+            @include prelude.Button();
 
-            background-color: $Background;
+            background-color: colors.$Background;
             min-width: 4rem;
             margin-right: 1rem;
         }
@@ -33,7 +35,7 @@ $Shadow: darken($BackdropBase, 5%);
         undershoot.top {
             background: linear-gradient(
                 to top,
-                transparentize($Shadow, 1),
+                color.adjust($Shadow, $alpha: -1),
                 $Shadow
             );
         }
@@ -41,7 +43,7 @@ $Shadow: darken($BackdropBase, 5%);
         undershoot.bottom {
             background: linear-gradient(
                 to bottom,
-                transparentize($Shadow, 1),
+                color.adjust($Shadow, $alpha: -1),
                 $Shadow
             );
         }
@@ -59,24 +61,24 @@ $Shadow: darken($BackdropBase, 5%);
         scrollbar slider {
             border: none;
             min-width: 0.5rem;
-            background-color: $Scrollbar;
+            background-color: colors.$Scrollbar;
             border-radius: 1rem;
 
             &:hover {
                 min-width: 0.5rem;
-                background-color: $ScrollbarHover;
+                background-color: colors.$ScrollbarHover;
             }
 
             &:active {
                 min-width: 0.5rem;
-                background-color: $ScrollbarActive;
+                background-color: colors.$ScrollbarActive;
             }
         }
     }
 
     .Notifications .Notification {
         padding: 0.8rem 0.9rem;
-        background-color: transparentize($BackdropFg, 0.9);
+        background-color: color.adjust(colors.$BackdropFg, $alpha: -0.9);
         border-radius: 0.8rem;
         margin-right: 1rem;
 
@@ -151,11 +153,11 @@ $Shadow: darken($BackdropBase, 5%);
 
     .Fallback {
         .Icon {
-            color: darken($Text, 75%);
+            color: color.adjust(colors.$Text, $lightness: -75%);
         }
 
         .Label {
-            color: $TextDark;
+            color: colors.$TextDark;
             font-weight: 800;
             font-size: 1.5rem;
         }

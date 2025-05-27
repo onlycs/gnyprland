@@ -1,7 +1,8 @@
+@use "sass:color";
 .Weather {
     .Header {
         .Place {
-            color: darken($Text, 15%);
+            color: color.adjust($Text, $lightness: -15%);
             font-size: 0.85rem;
             margin-bottom: 0.15rem;
         }
@@ -25,12 +26,12 @@
 
         .HiLo {
             .High {
-                color: darken($Text, 5%);
+                color: color.adjust($Text, $lightness: -5%);
                 font-weight: 500;
             }
 
             .Low {
-                color: lighten($TextDark, 15%);
+                color: color.adjust($TextDark, $lightness: 15%);
                 font-weight: 400;
             }
         }
@@ -45,7 +46,7 @@
     }
 
     .Error {
-        color: darken($Text, 5%);
+        color: color.adjust($Text, $lightness: -5%);
         font-size: 1.05rem;
         font-weight: 600;
         margin-top: 1rem;

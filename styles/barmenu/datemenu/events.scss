@@ -1,3 +1,4 @@
+@use "sass:color";
 .Events {
     .Event {
         .VPill {
@@ -7,7 +8,7 @@
         }
 
         .Time {
-            color: darken($Text, 15%);
+            color: color.adjust($Text, $lightness: -15%);
         }
 
         .Summary {
@@ -16,7 +17,7 @@
     }
 
     .NoEvents {
-        color: darken($Text, 5%);
+        color: color.adjust($Text, $lightness: -5%);
         font-size: 1.05rem;
         font-weight: 600;
         margin-top: 1rem;

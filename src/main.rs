@@ -1,48 +1,37 @@
-#![feature(
-    error_generic_member_access,
-    let_chains,
-    never_type,
-    concat_idents,
-    trait_alias,
-    if_let_guard
-)]
+#![feature(error_generic_member_access)]
 
-extern crate astal;
-extern crate astal_hyprland;
-extern crate astal_io;
-extern crate gio;
-extern crate glib;
-extern crate gtk;
+extern crate async_std;
+#[macro_use]
+extern crate cfg_if;
+extern crate hyprland;
 extern crate lazy_static;
-extern crate macros;
+extern crate relm4;
+extern crate thiserror;
+#[macro_use]
+extern crate log;
 
-pub mod binding;
-pub mod consts;
-pub mod css;
-pub mod ggc;
-pub mod prelude;
-pub mod services;
-pub mod ui;
-pub mod variables;
+mod bar;
+mod css;
+mod prelude;
 
-use std::{backtrace::Backtrace, panic::Location};
+use log::LevelFilter;
+use simple_logger::SimpleLogger;
 
-use async_std::task;
-use thiserror::Error;
+fn main() {
+    SimpleLogger::new()
+        .with_colors(true)
+        .with_threads(true)
+        .with_local_timestamps()
+        .with_timestamp_format(time::macros::format_description!(
+            "[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:3]"
+        ))
+        .with_level(if cfg!(debug_assertions) {
+            LevelFilter::Debug
+        } else {
+            LevelFilter::Info
+        })
+        .init()
+        .unwrap();
 
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("At {location}: CSS Watcher Error:\n{source}")]
-    CssWatcher {
-        #[from]
-        source: css::error::WatcherError,
-        location: &'static Location<'static>,
-        backtrace: Backtrace,
-    },
-}
-
-#[async_std::main]
-async fn main() -> Result<!, Error> {
-    task::spawn_blocking(ui::run_blocking);
-    css::watch(ui::get_app().await).await?;
+    bar::run();
 }

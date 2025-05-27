@@ -1,12 +1,2 @@
-@import "bar";
-@import "barmenu";
-@import "prelude";
-
-* {
-    transition: all 0.2s ease-in-out;
-    font-weight: 400;
-}
-
-.active-window {
-    font-size: 3rem;
-}
+@use "bar";
+@use "prelude";

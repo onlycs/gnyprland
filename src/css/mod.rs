@@ -1,78 +1,24 @@
-pub mod error;
+cfg_if! {
+    if #[cfg(debug_assertions)] {
+        mod watch;
+        pub use watch::*;
+    } else {
+        mod env;
 
-use crate::prelude::*;
-use astal_obj::*;
-use async_std::{process::Command, stream::StreamExt, task};
-use error::{ReloadError, WatcherError};
-use futures::{channel::mpsc, SinkExt};
-use notify::{EventKind, RecommendedWatcher, Watcher};
-use std::{
-    path::Path,
-    time::{Duration, Instant},
-};
-
-type Result<T, E = WatcherError> = std::result::Result<T, E>;
-
-async fn recompile() -> Result<()> {
-    let output = Command::new("sass")
-        .args(&["styles/index.scss", "/tmp/ags/index.css"])
-        .output()
-        .await?;
-
-    match output.status.code() {
-        Some(0) => println!("Successfully compiled styles"),
-        Some(code) => {
-            eprintln!("Failed to compile styles: exit code {}", code);
-            eprintln!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
-            eprintln!("stderr:\n{}", String::from_utf8_lossy(&output.stderr));
-        }
-        None => eprintln!("Failed to compile styles: no exit code"),
+        use std::{io::{self, Write}, fs::OpenOptions};
+        pub use env::*;
     }
-
-    Ok(())
 }
 
-pub fn reload(app: &Application) -> Result<(), ReloadError> {
-    app.apply_css("/tmp/ags/index.css", true);
+#[cfg(not(debug_assertions))]
+pub fn write_css() -> Result<(), io::Error> {
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(FILE)?;
+
+    file.write_all(CSS.as_bytes())?;
+
     Ok(())
-}
-
-pub async fn watch(app: &'static Application) -> Result<!> {
-    task::block_on(recompile())?;
-    reload(app)?;
-
-    let (mut tx, mut rx) = mpsc::unbounded();
-    let mut watcher = RecommendedWatcher::new(
-        move |res| task::block_on(tx.send(res)).unwrap(),
-        Default::default(),
-    )?;
-
-    let mut timeout = Instant::now();
-    watcher.watch(Path::new("styles"), notify::RecursiveMode::Recursive)?;
-
-    while let Some(event) = rx.next().await {
-        let event = event?;
-
-        if matches!(event.kind, EventKind::Other) {
-            break;
-        }
-
-        if !matches!(
-            event.kind,
-            EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_)
-        ) {
-            continue;
-        }
-
-        if timeout.elapsed() <= Duration::from_millis(500) {
-            continue;
-        } else {
-            timeout = Instant::now();
-        }
-
-        task::block_on(recompile())?;
-        reload(app)?;
-    }
-
-    panic!("watcher exited unexpectedly")
 }

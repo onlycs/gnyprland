@@ -1,9 +1,10 @@
+@use "sass:meta";
 .DateMenu {
     margin-left: calc(1rem - 4px);
 
-    @import "./card";
-    @import "./date";
-    @import "./calendar";
-    @import "./events";
-    @import "./weather";
+    @include meta.load-css("card");
+    @include meta.load-css("date");
+    @include meta.load-css("calendar");
+    @include meta.load-css("events");
+    @include meta.load-css("weather");
 }
