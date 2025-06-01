@@ -1,20 +1,11 @@
 use std::{
     backtrace::Backtrace,
-    fs::OpenOptions,
     io::{self},
     panic::Location,
     path::Path,
-    time::Instant,
 };
 
-use async_std::{
-    channel, process,
-    stream::StreamExt,
-    task::{self, JoinHandle},
-};
-use notify::{
-    recommended_watcher, EventKind, INotifyWatcher, RecommendedWatcher, RecursiveMode, Watcher,
-};
+use notify::{EventKind, RecommendedWatcher, Watcher};
 use thiserror::Error;
 
 pub const FILE: &str = "/tmp/gnyprland/index.css";
@@ -40,7 +31,9 @@ pub enum WatcherError {
 
 #[cfg(debug_assertions)]
 pub fn begin_watch(reload: impl Fn() + Send + Sync + 'static) {
-    task::block_on(
+    use smol::{channel, process};
+
+    smol::block_on(
         process::Command::new("sass")
             .args(["styles/index.scss", FILE])
             .output(),
@@ -49,10 +42,10 @@ pub fn begin_watch(reload: impl Fn() + Send + Sync + 'static) {
 
     reload();
 
-    task::spawn(async move {
-        let (tx, mut rx) = channel::unbounded();
+    smol::spawn(async move {
+        let (tx, rx) = channel::unbounded();
         let mut watcher = RecommendedWatcher::new(
-            move |res| task::block_on(tx.send(res)).unwrap(),
+            move |res| smol::block_on(tx.send(res)).unwrap(),
             Default::default(),
         )
         .unwrap();
@@ -62,9 +55,9 @@ pub fn begin_watch(reload: impl Fn() + Send + Sync + 'static) {
             .unwrap();
 
         loop {
-            let event = rx.next().await;
+            let event = rx.recv().await;
 
-            let Some(Ok(event)) = event else {
+            let Ok(Ok(event)) = event else {
                 continue;
             };
 
@@ -83,5 +76,6 @@ pub fn begin_watch(reload: impl Fn() + Send + Sync + 'static) {
 
             reload();
         }
-    });
+    })
+    .detach();
 }

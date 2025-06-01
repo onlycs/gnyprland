@@ -1,10 +1,10 @@
 use std::{collections::HashMap, convert, sync::LazyLock, thread};
 
-use async_std::task;
 use hyprland::{
     data::Client,
     event_listener::{EventListener, WindowEventData},
-    shared::{Address, HyprDataActiveOptional},
+    prelude::*,
+    shared::Address,
 };
 use map_macro::hash_map;
 use relm4::gtk::{pango::EllipsizeMode, Orientation};
@@ -85,7 +85,7 @@ impl SimpleComponent for ActiveWindow {
         _root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        task::spawn_blocking(move || {
+        thread::spawn(move || {
             let mut listener = EventListener::new();
 
             listener.add_active_window_changed_handler(move |event| {

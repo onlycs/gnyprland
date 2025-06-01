@@ -1,0 +1,29 @@
+[package]
+name = "gnyprland-ui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch = "master", features = [
+    "ahash",
+    "async-std",
+    "config",
+    "ctl",
+    "data",
+    "dispatch",
+    "keyword",
+    "listener",
+], default-features = false }
+gtk4-layer-shell = "0.5.0"
+relm4 = { version = "0.9.1", default-features = false, features = [
+    "gnome_46",
+    "macros",
+    "libadwaita",
+] }
+thiserror = { git = "https://github.com/onlycs/thiserror" }
+map-macro = "0.3.0"
+cfg-if = "1.0.0"
+log = "0.4.27"
+gnyprland-relay = { version = "0.1.0", path = "../relay" }
+smol = "2.0.2"
+notify = "8.0.0"

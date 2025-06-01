@@ -1,26 +1,3 @@
-[package]
-name = "gnyprland"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-hyprland = { git = "https://github.com/hyprland-community/hyprland-rs", branch = "master", features = ["ahash", "async-std", "config", "ctl", "data", "dispatch", "keyword", "listener"], default-features = false }
-async-std = { version = "1.13.1", features = ["unstable"] }
-gtk4-layer-shell = "0.5.0"
-lazy_static = "1.5.0"
-relm4 = { version = "0.9.1", default-features = false, features = [
-    "gnome_46",
-    "macros",
-    "libadwaita",
-] }
-thiserror = { git = "https://github.com/onlycs/thiserror" }
-map-macro = "0.3.0"
-notify = "7.0.0"
-cfg-if = "1.0.0"
-simple_logger = { version = "5.0.0", features = [
-    "colors",
-    "threads",
-    "nightly",
-] }
-log = "0.4.27"
-time = "0.3.41"
+[workspace]
+resolver = "2"
+members = ["crates/*"]

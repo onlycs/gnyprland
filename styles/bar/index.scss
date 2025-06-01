@@ -2,11 +2,12 @@
 @use "sass:meta";
 
 @use "../colors";
+
 @use "prelude";
+@use "activewindow";
+@use "activeworkspace";
 
 .Bar {
     background-color: colors.$Backdrop;
-    padding: 0.35rem 0.35rem;
-
-    @include meta.load-css("activewindow");
+    padding: 0.5rem 0.4rem;
 }
