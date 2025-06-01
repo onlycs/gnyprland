@@ -1,0 +1,111 @@
+use std::thread;
+
+use hyprland::{data::Workspaces, event_listener::EventListener, shared::HyprData};
+use relm4::{gtk::glib::clone, SimpleComponent};
+
+use crate::prelude::*;
+
+fn calculate() -> u16 {
+    Workspaces::get()
+        .unwrap()
+        .into_iter()
+        .take(10)
+        .map(|n| (str::parse(&n.name).unwrap_or(1) - 1, n.windows))
+        .filter(|(_, n)| *n > 0)
+        .fold(0u16, |mask, (i, _)| mask | (1 << i))
+}
+
+fn cname(mask: u16, n: usize) -> &'static [&'static str] {
+    if mask & (1 << n) > 0 {
+        &["WorkspaceIndicator", "Windows"]
+    } else {
+        &["WorkspaceIndicator"]
+    }
+}
+
+pub struct OpenIndicator {
+    mask: u16,
+}
+
+pub struct IndicatorWidgets {
+    indicators: Vec<gtk::Box>,
+}
+
+impl SimpleComponent for OpenIndicator {
+    type Init = ();
+    type Input = u16;
+    type Output = ();
+    type Root = gtk::Box;
+    type Widgets = IndicatorWidgets;
+
+    fn init(
+        _: Self::Init,
+        root: Self::Root,
+        sender: ComponentSender<Self>,
+    ) -> ComponentParts<Self> {
+        thread::spawn(move || {
+            let mut listener = EventListener::new();
+
+            listener.add_window_closed_handler(clone!(
+                #[strong]
+                sender,
+                move |_| sender.input(calculate())
+            ));
+
+            listener.add_window_opened_handler(clone!(
+                #[strong]
+                sender,
+                move |_| sender.input(calculate())
+            ));
+
+            listener.add_window_moved_handler(clone!(
+                #[strong]
+                sender,
+                move |_| sender.input(calculate())
+            ));
+
+            listener.add_window_pinned_handler(clone!(
+                #[strong]
+                sender,
+                move |_| sender.input(calculate())
+            ));
+
+            listener.add_workspace_changed_handler(clone!(
+                #[strong]
+                sender,
+                move |_| sender.input(calculate())
+            ));
+
+            listener.start_listener().unwrap()
+        });
+
+        let mask = calculate();
+
+        let mut indicators = vec![];
+        for i in 0..10 {
+            let indicator = gtk::Box::builder().css_classes(cname(mask, i)).build();
+
+            root.append(&indicator);
+            indicators.push(indicator);
+        }
+
+        let model = OpenIndicator { mask: 0 };
+        let widgets = IndicatorWidgets { indicators };
+
+        ComponentParts { model, widgets }
+    }
+
+    fn init_root() -> Self::Root {
+        gtk::Box::builder().spacing(6).build()
+    }
+
+    fn update(&mut self, message: Self::Input, _: ComponentSender<Self>) {
+        self.mask = message;
+    }
+
+    fn update_view(&self, widgets: &mut Self::Widgets, _: ComponentSender<Self>) {
+        for (i, w) in widgets.indicators.iter_mut().enumerate() {
+            w.set_css_classes(cname(self.mask, i));
+        }
+    }
+}

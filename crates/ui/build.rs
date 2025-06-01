@@ -7,7 +7,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if is_release {
         let _ = process::Command::new("sass")
-            .args(["styles/index.scss", "/tmp/gnyprland/index-release.css"])
+            .args([
+                "../../styles/index.scss",
+                "/tmp/gnyprland/index-release.css",
+            ])
             .output()?
             .exit_ok()?;
     }

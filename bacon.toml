@@ -16,14 +16,9 @@ default_job = "run-long"
 # If you often use this job, it makes sense to override the 'r' key by adding
 # a binding `r = job:run-long` at the end of this file .
 [jobs.run-long]
-command = [
-    "cargo",
-    "run",
-    "--color",
-    "always",
-    # put launch parameters for your program behind a `--` separator
-]
+command = ["cargo", "run", "--color", "always"]
 need_stdout = true
+kill = ["kill", "-s", "INT"]
 allow_warnings = true
 background = false
 on_change_strategy = "kill_then_restart"

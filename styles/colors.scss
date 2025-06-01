@@ -6,7 +6,7 @@ $Card1: color.adjust($Background, $lightness: 5%);
 $Card2: color.adjust($Card1, $lightness: 5%);
 
 $Text: #fff;
-$TextDark: #77767b;
+$TextDark: #686868;
 
 @function hover($color) {
     @return color.adjust($color, $lightness: 3%);

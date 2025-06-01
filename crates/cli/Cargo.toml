@@ -1,0 +1,18 @@
+[package]
+name = "gnyprland"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.39", features = ["derive"] }
+ctrlc = "3.4.7"
+gnyprland-relay = { version = "0.1.0", path = "../relay" }
+gnyprland-ui = { version = "0.1.0", path = "../ui" }
+log = "0.4.27"
+simple_logger = { version = "5.0.0", features = [
+    "colors",
+    "threads",
+    "nightly",
+] }
+smol = "2.0.2"
+time = "0.3.41"

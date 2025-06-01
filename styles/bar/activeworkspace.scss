@@ -1,32 +1,28 @@
 @use "sass:color";
+@use "../colors.scss";
+
+$Dot: color.adjust(colors.$TextDark, $lightness: -12.5%);
 
 .WorkspaceIndicator {
     min-width: 4px;
     min-height: 4px;
-    margin: 5px 6px 7px 0;
-    border-radius: 16px;
-    background-color: transparent;
 
-    border: 1px solid color.adjust($Text, $lightness: -50%);
+    border-radius: 100%;
+    border: $Dot 1px solid;
 
     &.Windows {
-        background-color: color.adjust($Text, $lightness: -50%);
-    }
-
-    &.Last {
-        margin-right: 0;
+        background-color: $Dot;
     }
 }
 
-.SliderSegment {
-    transition: all 0.1s ease-in-out;
-    background-color: $Text;
-    border-radius: 3px;
+.SliderDrawing {
     min-height: 6px;
-    margin: 9px 0 3px 0;
+    min-width: 114px;
 
-    &.Current {
-        margin-right: 6px;
-        margin-left: 6px;
-    }
+    margin-bottom: 7px;
+}
+
+.ActiveWorkspace {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
