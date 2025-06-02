@@ -1,12 +1,6 @@
-use std::{collections::HashMap, convert, sync::LazyLock, thread};
+use std::{collections::HashMap, sync::LazyLock};
 
-use hyprland::{
-    data::Client,
-    event_listener::{EventListener, WindowEventData},
-    prelude::*,
-    shared::Address,
-};
-use map_macro::hash_map;
+use hyprland::{data::Client, event_listener::WindowEventData, prelude::*, shared::Address};
 use relm4::gtk::{pango::EllipsizeMode, Orientation};
 
 use crate::prelude::*;
@@ -29,17 +23,14 @@ static CLASS_OVERRIDES: LazyLock<ClassMap> = LazyLock::new(|| {
 });
 
 fn title_override(class: &str, title: String) -> String {
-    TITLE_OVERRIDES
-        .get(class)
-        .copied()
-        .unwrap_or(convert::identity)(title)
+    TITLE_OVERRIDES.get(class).copied().unwrap_or(identity)(title)
 }
 
 fn class_override(class: String) -> String {
     CLASS_OVERRIDES
         .get(class.as_str())
         .copied()
-        .unwrap_or(convert::identity)(class)
+        .unwrap_or(identity)(class)
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -60,12 +51,12 @@ impl SimpleComponent for ActiveWindow {
     view! {
         gtk::Box {
             set_orientation: Orientation::Vertical,
-            set_css_classes: &["BarElement", "ActiveWindow"],
+            set_css_classes: css!["element", "active-window"],
 
             gtk::Label {
                 #[watch]
                 set_label: &title_override(&model.active.class, model.active.title.clone()),
-                set_css_classes: &["TextMain"],
+                set_css_classes: &["text"],
                 set_max_width_chars: 10,
                 set_ellipsize: EllipsizeMode::End
             },
@@ -73,7 +64,7 @@ impl SimpleComponent for ActiveWindow {
             gtk::Label {
                 #[watch]
                 set_label: &class_override(model.active.class.clone()),
-                set_css_classes: &["TextSub"],
+                set_css_classes: &["text-sub"],
                 set_max_width_chars: 10,
                 set_ellipsize: EllipsizeMode::End,
             }
@@ -90,12 +81,20 @@ impl SimpleComponent for ActiveWindow {
 
             listener.add_active_window_changed_handler(move |event| {
                 let Some(window) = event else {
+                    info!("No active window found");
                     return;
                 };
+
+                trace!(
+                    "Active window changed: {} (class: {})",
+                    window.title,
+                    window.class
+                );
 
                 sender.input(Message::Update(window));
             });
 
+            debug!("Watching for active window changes");
             listener.start_listener().unwrap()
         });
 

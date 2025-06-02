@@ -112,7 +112,8 @@ async fn connect_to_socket() -> io::Result<UnixStream> {
 fn main() {
     SimpleLogger::new()
         .with_colors(true)
-        .with_threads(true)
+        .with_threads(cfg!(debug_assertions))
+        .with_source_location(cfg!(debug_assertions))
         .with_local_timestamps()
         .with_timestamp_format(format_description!(
             "[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:3]"

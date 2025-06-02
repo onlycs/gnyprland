@@ -3,26 +3,26 @@
 
 $Dot: color.adjust(colors.$TextDark, $lightness: -12.5%);
 
-.WorkspaceIndicator {
+.workspace-indicator {
     min-width: 4px;
     min-height: 4px;
 
     border-radius: 100%;
     border: $Dot 1px solid;
 
-    &.Windows {
+    &.with-windows {
         background-color: $Dot;
     }
 }
 
-.SliderDrawing {
+.slider {
     min-height: 6px;
     min-width: 114px;
 
     margin-bottom: 7px;
 }
 
-.ActiveWorkspace {
-    padding-top: 10px;
-    padding-bottom: 10px;
+.active-workspace {
+    padding-top: 12px;
+    padding-bottom: 12px;
 }

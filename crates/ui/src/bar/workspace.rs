@@ -1,8 +1,8 @@
-mod active;
-mod open;
+mod indicator;
+mod slider;
 
-use active::ActiveSlider;
-use open::OpenIndicator;
+use indicator::OpenIndicator;
+use slider::ActiveSlider;
 
 use crate::prelude::*;
 
@@ -21,13 +21,13 @@ impl SimpleComponent for ActiveWorkspace {
     view! {
         gtk::Box {
             set_orientation: relm4::gtk::Orientation::Vertical,
-            set_css_classes: &["BarElement", "ActiveWorkspace"],
+            set_css_classes: &["element", "active-workspace"],
 
             #[local_ref]
             slider_widget -> <ActiveSlider as Component>::Root {},
 
             #[local_ref]
-            open_widget -> <OpenIndicator as Component>::Root {},
+            indicator_widget -> <OpenIndicator as Component>::Root {},
         }
     }
 
@@ -40,7 +40,7 @@ impl SimpleComponent for ActiveWorkspace {
         let open = OpenIndicator::builder().launch(()).detach();
 
         let slider_widget = slider.widget();
-        let open_widget = open.widget();
+        let indicator_widget = open.widget();
 
         let widgets = view_output!();
         let model = ActiveWorkspace { slider, open };

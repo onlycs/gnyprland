@@ -1,7 +1,4 @@
-use std::thread;
-
-use hyprland::{data::Workspaces, event_listener::EventListener, shared::HyprData};
-use relm4::{gtk::glib::clone, SimpleComponent};
+use hyprland::{data::Workspaces, shared::HyprData};
 
 use crate::prelude::*;
 
@@ -15,12 +12,8 @@ fn calculate() -> u16 {
         .fold(0u16, |mask, (i, _)| mask | (1 << i))
 }
 
-fn cname(mask: u16, n: usize) -> &'static [&'static str] {
-    if mask & (1 << n) > 0 {
-        &["WorkspaceIndicator", "Windows"]
-    } else {
-        &["WorkspaceIndicator"]
-    }
+fn cname(mask: u16, n: usize) -> Vec<&'static str> {
+    css!["workspace-indicator", "with-windows" if mask & (1 << n) > 0].to_vec()
 }
 
 pub struct OpenIndicator {
@@ -105,7 +98,7 @@ impl SimpleComponent for OpenIndicator {
 
     fn update_view(&self, widgets: &mut Self::Widgets, _: ComponentSender<Self>) {
         for (i, w) in widgets.indicators.iter_mut().enumerate() {
-            w.set_css_classes(cname(self.mask, i));
+            w.set_css_classes(cname(self.mask, i).as_slice());
         }
     }
 }

@@ -4,13 +4,11 @@ use std::{
         atomic::{self, AtomicPtr, AtomicU8},
         Arc, RwLock,
     },
-    thread,
-    time::{Duration, Instant},
 };
 
-use hyprland::{data::Workspace, event_listener::EventListener, shared::HyprDataActive};
+use hyprland::{data::Workspace, shared::HyprDataActive};
 use relm4::gtk::{
-    glib::{clone, timeout_add, translate::FromGlibPtrNone, ControlFlow},
+    glib::{timeout_add, translate::FromGlibPtrNone, ControlFlow},
     DrawingArea,
 };
 
@@ -22,8 +20,10 @@ fn translate(a: f64, b: f64, t: f64) -> f64 {
     t * t * (3.0 - 2.0 * t) * (b - a) + a
 }
 
-fn active() -> u8 {
+fn recalculate_active() -> u8 {
     let active = Workspace::get_active().unwrap();
+
+    trace!("New active workspace: {}", active.name);
     str::parse(&active.name).unwrap()
 }
 
@@ -49,9 +49,7 @@ impl SimpleComponent for ActiveSlider {
     type Widgets = ActiveWorkspaceWidgets;
 
     fn init_root() -> Self::Root {
-        gtk::DrawingArea::builder()
-            .css_classes(["SliderDrawing"])
-            .build()
+        gtk::DrawingArea::builder().css_classes(["slider"]).build()
     }
 
     fn init(
@@ -59,9 +57,10 @@ impl SimpleComponent for ActiveSlider {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
+        let current = recalculate_active();
         let draw_data = Arc::new(DrawData {
-            last: AtomicU8::new(0),
-            current: AtomicU8::new(0),
+            last: AtomicU8::new(current - 1),
+            current: AtomicU8::new(current - 1),
             switch: RwLock::new(Instant::now()),
         });
         let widgets = ActiveWorkspaceWidgets { root };
@@ -75,9 +74,10 @@ impl SimpleComponent for ActiveSlider {
             listener.add_workspace_changed_handler(clone!(
                 #[strong]
                 sender,
-                move |_| sender.input(active())
+                move |_| sender.input(recalculate_active()),
             ));
 
+            debug!("Watching for active workspace changes");
             listener.start_listener().unwrap()
         });
 

@@ -1,6 +1,8 @@
+mod datetime;
 mod window;
 mod workspace;
 
+use datetime::DateTime;
 use gnyprland_relay::{
     message::{IpcMessage, IpcReceiver, IpcResponse},
     RelayResponder,
@@ -9,7 +11,7 @@ use relm4::gtk::{gdk::Display, CssProvider};
 use window::ActiveWindow;
 use workspace::ActiveWorkspace;
 
-use crate::{css, prelude::*};
+use crate::{css, menu, prelude::*};
 
 const HEIGHT: i32 = 52;
 
@@ -19,14 +21,14 @@ pub enum Message {
     ReloadCSS,
 }
 
+#[allow(dead_code)]
 pub struct Bar {
     responder: RelayResponder<IpcResponse>,
     css: gtk::CssProvider,
 
-    #[allow(dead_code)]
     active_window: Controller<ActiveWindow>,
-    #[allow(dead_code)]
     active_workspace: Controller<ActiveWorkspace>,
+    datetime: Controller<DateTime>,
 }
 
 #[relm4::component(pub)]
@@ -41,23 +43,30 @@ impl SimpleComponent for Bar {
             set_default_height: HEIGHT,
 
             init_layer_shell: (),
-            set_layer: Layer::Top,
+            set_layer: Layer::Bottom,
             set_anchor: (Edge::Top, true),
-            set_anchor: (Edge::Left, true),
             set_anchor: (Edge::Right, true),
+            set_anchor: (Edge::Left, true),
             set_exclusive_zone: HEIGHT,
 
             set_hexpand: true,
-            set_css_classes: &["Bar"],
+            set_css_classes: &["bar"],
 
-            gtk::Box {
-                set_spacing: 8,
+            gtk::CenterBox {
+                #[wrap(Some)]
+                set_start_widget = &gtk::Box {
+                    set_spacing: 8,
+
+                    #[local_ref]
+                    active_window_widget -> <ActiveWindow as Component>::Root {},
+
+                    #[local_ref]
+                    active_workspace_widget -> <ActiveWorkspace as Component>::Root {},
+                },
 
                 #[local_ref]
-                active_window_widget -> <ActiveWindow as Component>::Root {},
-
-                #[local_ref]
-                active_workspace_widget -> <ActiveWorkspace as Component>::Root {}
+                #[wrap(Some)]
+                set_center_widget = datetime_widget -> <DateTime as Component>::Root {},
             }
         }
     }
@@ -69,6 +78,7 @@ impl SimpleComponent for Bar {
     ) -> ComponentParts<Self> {
         cfg_if! {
             if #[cfg(debug_assertions)] {
+                debug!("Watching for CSS changes");
                 let sender_clone = sender.clone();
                 css::begin_watch(move || sender_clone.input_sender().emit(Message::ReloadCSS));
             } else {
@@ -78,9 +88,15 @@ impl SimpleComponent for Bar {
         }
 
         let active_window = ActiveWindow::builder().launch(()).detach();
+
         let active_workspace = ActiveWorkspace::builder().launch(()).detach();
+        let datetime = DateTime::builder()
+            .launch(())
+            .forward(sender.input_sender(), identity);
+
         let active_window_widget = active_window.widget();
         let active_workspace_widget = active_workspace.widget();
+        let datetime_widget = datetime.widget();
 
         // setup return values
         let css = CssProvider::new();
@@ -90,6 +106,7 @@ impl SimpleComponent for Bar {
             css,
             active_window,
             active_workspace,
+            datetime,
         };
 
         // register css provider
@@ -106,6 +123,8 @@ impl SimpleComponent for Bar {
             }
         })
         .detach();
+
+        menu::attach_windows();
 
         ComponentParts { model, widgets }
     }

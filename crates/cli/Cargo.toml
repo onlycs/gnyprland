@@ -9,7 +9,7 @@ ctrlc = "3.4.7"
 gnyprland-relay = { version = "0.1.0", path = "../relay" }
 gnyprland-ui = { version = "0.1.0", path = "../ui" }
 log = "0.4.27"
-simple_logger = { version = "5.0.0", features = [
+simple_logger = { git = "https://github.com/onlycs/simple-logger", features = [
     "colors",
     "threads",
     "nightly",

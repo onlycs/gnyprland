@@ -1,39 +1,45 @@
 @use "sass:color";
-@use "colors";
+@use "colors.scss";
 
-.TextMain {
-    font-family: "Cantarell";
+.text {
     font-size: medium;
     color: colors.$Text;
 }
 
-.TextSub {
-    font-family: "Cantarell";
+.text-sub {
     font-size: smaller;
     color: colors.$TextDark;
 }
 
-.TextLarge {
+.text-lg {
+    @extend .text;
+
     font-size: 1.2rem;
 }
 
-@mixin Interactable($bg: colors.$Background, $set-bg: true) {
+@mixin interactable(
+    $bg: colors.$Background,
+    $hover: colors.hover($bg),
+    $click: colors.click($bg),
+    $open: colors.open($bg),
+    $set-bg: true
+) {
     @if $set-bg {
         background-color: $bg;
     }
 
-    transition: all 0.1s ease;
+    transition: all 0.15s ease;
 
-    &.Hover {
-        background-color: colors.hover($bg);
+    &:hover {
+        background-color: $hover;
     }
 
-    &.Click {
-        background-color: colors.click($bg);
+    &:active {
+        background-color: $click;
     }
 
-    &.Active {
-        background-color: colors.active($bg);
+    &.open {
+        background-color: $open;
     }
 }
 
