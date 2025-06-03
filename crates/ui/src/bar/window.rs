@@ -1,6 +1,9 @@
 use std::{collections::HashMap, sync::LazyLock};
 
-use hyprland::{data::Client, event_listener::WindowEventData, prelude::*, shared::Address};
+use hyprland::{
+    command::{self, Executor},
+    event::{self, ActiveWindowData},
+};
 use relm4::gtk::{pango::EllipsizeMode, Orientation};
 
 use crate::prelude::*;
@@ -19,6 +22,7 @@ static TITLE_OVERRIDES: LazyLock<ClassMap> = LazyLock::new(|| {
 static CLASS_OVERRIDES: LazyLock<ClassMap> = LazyLock::new(|| {
     hash_map! {
         "dev.zed.Zed" => (|_| String::from("zed")) as fn(String) -> String,
+        "" => |_| String::from("desktop")
     }
 });
 
@@ -33,13 +37,13 @@ fn class_override(class: String) -> String {
         .unwrap_or(identity)(class)
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Message {
-    Update(WindowEventData),
+    Update(ActiveWindowData),
 }
 
 pub struct ActiveWindow {
-    active: WindowEventData,
+    active: ActiveWindowData,
 }
 
 #[relm4::component(pub)]
@@ -79,11 +83,8 @@ impl SimpleComponent for ActiveWindow {
         thread::spawn(move || {
             let mut listener = EventListener::new();
 
-            listener.add_active_window_changed_handler(move |event| {
-                let Some(window) = event else {
-                    info!("No active window found");
-                    return;
-                };
+            listener.register::<event::ActiveWindow>(move |window| {
+                trace!("Active window event: {window:?}");
 
                 trace!(
                     "Active window changed: {} (class: {})",
@@ -91,28 +92,20 @@ impl SimpleComponent for ActiveWindow {
                     window.class
                 );
 
-                sender.input(Message::Update(window));
+                sender.input(Message::Update(window.clone()));
             });
 
             debug!("Watching for active window changes");
-            listener.start_listener().unwrap()
+            listener.listen().unwrap()
         });
 
-        let current_active = match Client::get_active().unwrap() {
-            Some(client) => WindowEventData {
-                address: client.address,
-                title: client.title,
-                class: client.class,
-            },
-            None => WindowEventData {
-                address: Address::new("unknown"),
-                class: String::new(),
-                title: String::new(),
-            },
-        };
+        let current_active = Executor::command::<command::ActiveWindow>().unwrap();
 
         let model = ActiveWindow {
-            active: current_active,
+            active: ActiveWindowData {
+                class: current_active.class,
+                title: current_active.title,
+            },
         };
 
         let widgets = view_output!();

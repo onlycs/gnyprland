@@ -13,7 +13,7 @@ use workspace::ActiveWorkspace;
 
 use crate::{css, menu, prelude::*};
 
-const HEIGHT: i32 = 52;
+const HEIGHT: i32 = 57;
 
 #[derive(Clone, Debug)]
 pub enum Message {
@@ -58,15 +58,15 @@ impl SimpleComponent for Bar {
                     set_spacing: 8,
 
                     #[local_ref]
-                    active_window_widget -> <ActiveWindow as Component>::Root {},
+                    active_window_widget -> root!(ActiveWindow),
 
                     #[local_ref]
-                    active_workspace_widget -> <ActiveWorkspace as Component>::Root {},
+                    active_workspace_widget -> root!(ActiveWorkspace),
                 },
 
                 #[local_ref]
                 #[wrap(Some)]
-                set_center_widget = datetime_widget -> <DateTime as Component>::Root {},
+                set_center_widget = datetime_widget -> root!(DateTime),
             }
         }
     }

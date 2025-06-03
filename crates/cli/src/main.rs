@@ -8,15 +8,17 @@ extern crate ctrlc;
 extern crate gnyprland_ui;
 extern crate smol;
 
-use std::{env, fs, mem, process, str::FromStr};
+use std::{env, error::Error, mem, process, str::FromStr};
 
 use clap::Parser;
 use gnyprland_relay::message::{IpcMessage, IpcResponse};
 use log::LevelFilter;
 use simple_logger::SimpleLogger;
 use smol::{
+    fs,
     io::{self, AsyncReadExt, AsyncWriteExt},
     net::unix::{UnixListener, UnixStream},
+    stream::StreamExt,
 };
 use time::macros::format_description;
 
@@ -51,12 +53,41 @@ pub async fn send(stream: &mut UnixStream, message: String) -> io::Result<()> {
     Ok(())
 }
 
-async fn start_bar() {
+async fn start_bar() -> Result<(), Box<dyn Error>> {
     let (tx, rx) = gnyprland_relay::channel::<IpcMessage, IpcResponse>();
+
+    // check if gnyprland is already running
+    let mut read = fs::read_dir("/proc").await?;
+    let this_pid = process::id().to_string();
+
+    while let Some(entry) = read.next().await {
+        let filename = entry?.file_name();
+        let pid = filename.to_string_lossy();
+
+        if !pid.chars().all(|c| c.is_digit(10)) {
+            continue;
+        }
+
+        if pid == this_pid {
+            continue;
+        }
+
+        let comm = format!("/proc/{pid}/comm");
+        let contents = fs::read_to_string(&comm).await?;
+
+        if contents.trim() == "gnyprland" {
+            error!("gnyprland is already running (PID: {pid})");
+            return Ok(());
+        }
+    }
+
+    if std::fs::exists("/tmp/gnyprland.socket")? {
+        fs::remove_file("/tmp/gnyprland.socket").await?;
+    }
 
     let Ok(listener) = UnixListener::bind("/tmp/gnyprland.socket") else {
         error!("Failed to bind to socket");
-        return;
+        return Ok(());
     };
 
     smol::spawn(async move {
@@ -94,15 +125,16 @@ async fn start_bar() {
 
     ctrlc::set_handler(move || {
         info!("Received Ctrl+C, shutting down...");
-        if let Err(e) = fs::remove_file("/tmp/gnyprland.socket") {
+        if let Err(e) = smol::block_on(fs::remove_file("/tmp/gnyprland.socket")) {
             error!("Failed to remove socket file: {e}");
         }
         process::exit(0);
-    })
-    .unwrap();
+    })?;
 
     info!("Starting UI");
     gnyprland_ui::start(rx);
+
+    Ok(())
 }
 
 async fn connect_to_socket() -> io::Result<UnixStream> {
@@ -157,5 +189,5 @@ fn main() {
         env::set_var("SMOL_THREADS", "4");
     }
 
-    smol::block_on(start_bar());
+    smol::block_on(start_bar()).unwrap();
 }

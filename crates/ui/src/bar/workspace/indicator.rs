@@ -1,9 +1,12 @@
-use hyprland::{data::Workspaces, shared::HyprData};
+use hyprland::{
+    command::{Executor, Workspaces},
+    event,
+};
 
 use crate::prelude::*;
 
 fn calculate() -> u16 {
-    Workspaces::get()
+    Executor::command::<Workspaces>()
         .unwrap()
         .into_iter()
         .take(10)
@@ -39,37 +42,26 @@ impl SimpleComponent for OpenIndicator {
         thread::spawn(move || {
             let mut listener = EventListener::new();
 
-            listener.add_window_closed_handler(clone!(
+            listener.register::<event::OpenWindow>(clone!(
                 #[strong]
                 sender,
                 move |_| sender.input(calculate())
             ));
 
-            listener.add_window_opened_handler(clone!(
+            listener.register::<event::CloseWindow>(clone!(
                 #[strong]
                 sender,
                 move |_| sender.input(calculate())
             ));
 
-            listener.add_window_moved_handler(clone!(
+            listener.register::<event::MoveWindow>(clone!(
                 #[strong]
                 sender,
                 move |_| sender.input(calculate())
             ));
 
-            listener.add_window_pinned_handler(clone!(
-                #[strong]
-                sender,
-                move |_| sender.input(calculate())
-            ));
-
-            listener.add_workspace_changed_handler(clone!(
-                #[strong]
-                sender,
-                move |_| sender.input(calculate())
-            ));
-
-            listener.start_listener().unwrap()
+            debug!("Watching for window changes");
+            listener.listen().unwrap();
         });
 
         let mask = calculate();

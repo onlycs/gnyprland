@@ -1,0 +1,10 @@
+@use "../colors.scss";
+
+.center-window {
+    min-height: 52.5rem;
+    min-width: 50rem;
+    margin-top: 1rem;
+    border-radius: 0.75rem;
+
+    background-color: colors.$Background;
+}

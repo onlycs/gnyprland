@@ -1,13 +1,9 @@
-pub use std::{
-    convert::identity,
-    thread,
-    time::{Duration, Instant},
-};
+pub use std::{convert::identity, thread, time::Duration};
 
 pub use cfg_if::cfg_if;
 pub use gtk::{self, glib::clone, prelude::*};
 pub use gtk4_layer_shell::{Edge, Layer, LayerShell};
-pub use hyprland::event_listener::EventListener;
+pub use hyprland::listener::EventListener;
 pub use log::*;
 pub use map_macro::hash_map;
 pub use relm4::prelude::*;
@@ -45,4 +41,8 @@ pub macro css {
         }
         .as_slice()
     }
+}
+
+pub macro root($name:ty) {
+    <$name as Component>::Root
 }
