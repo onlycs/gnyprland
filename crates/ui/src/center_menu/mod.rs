@@ -1,10 +1,14 @@
-use gtk4_layer_shell::KeyboardMode;
+mod notifications;
 
-use super::open::OpenMenu;
-use crate::prelude::*;
+use gtk4_layer_shell::KeyboardMode;
+use notifications::Notifications;
+
+use crate::{overlays::active::ActiveOverlay, prelude::*};
 
 pub struct CenterMenu {
     open: bool,
+
+    notifications: Controller<Notifications>,
 }
 
 #[relm4::component(pub)]
@@ -26,6 +30,9 @@ impl SimpleComponent for CenterMenu {
 
             #[watch]
             set_visible: model.open,
+
+            #[local_ref]
+            notifications_widget -> root!(Notifications),
         }
     }
 
@@ -34,11 +41,17 @@ impl SimpleComponent for CenterMenu {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        OpenMenu::on_change(sender.input_sender(), |open| {
-            open == Some(OpenMenu::Calendar)
+        ActiveOverlay::on_change(sender.input_sender(), |open| {
+            open == Some(ActiveOverlay::Center)
         });
 
-        let model = CenterMenu { open: false };
+        let notifications = Notifications::builder();
+        let notifications_widget = notifications.root.clone();
+
+        let model = CenterMenu {
+            open: false,
+            notifications: notifications.launch(()).detach(),
+        };
         let widgets = view_output!();
 
         ComponentParts { model, widgets }

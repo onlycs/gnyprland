@@ -1,13 +1,13 @@
-use center::CenterMenu;
-use overlay::Overlay;
+use clickoff::ClickOff;
 use relm4::{
     gtk::{self, glib::object::IsA, prelude::GtkApplicationExt, Application},
     Component, ComponentController,
 };
 
-mod center;
-pub mod open;
-mod overlay;
+use super::center_menu::CenterMenu;
+
+pub mod active;
+mod clickoff;
 
 fn attach_window<C: Component<Init = ()>>(app: &Application)
 where
@@ -22,5 +22,5 @@ pub fn attach_windows() {
     let app = relm4::main_application();
 
     attach_window::<CenterMenu>(&app);
-    attach_window::<Overlay>(&app);
+    attach_window::<ClickOff>(&app);
 }

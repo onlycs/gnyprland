@@ -18,3 +18,7 @@ smol = "2.0.2"
 notify = "8.0.0"
 chrono = "0.4.41"
 hyprland = { version = "0.1.0", path = "../hyprland" }
+zbus = "5.7.1"
+zbus_macros = "5.7.1"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_repr = "0.1.20"

@@ -1,14 +1,14 @@
 use gtk4_layer_shell::KeyboardMode;
 use relm4::gtk::{gdk::Key, glib::Propagation, EventControllerKey, GestureClick};
 
-use crate::{menu::open::OpenMenu, prelude::*};
+use crate::{overlays::active::ActiveOverlay, prelude::*};
 
-pub struct Overlay {
+pub struct ClickOff {
     visible: bool,
 }
 
 #[relm4::component(pub)]
-impl SimpleComponent for Overlay {
+impl SimpleComponent for ClickOff {
     type Init = ();
     type Input = bool;
     type Output = ();
@@ -40,24 +40,24 @@ impl SimpleComponent for Overlay {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        OpenMenu::on_change(sender.input_sender(), |open| open.is_some());
+        ActiveOverlay::on_change(sender.input_sender(), |open| open.is_some());
 
         let gesture = GestureClick::new();
         let key = EventControllerKey::new();
 
         gesture.connect_pressed(|_, _, _, _| {
-            OpenMenu::set(None);
+            ActiveOverlay::set(None);
         });
 
         key.connect_key_pressed(|_, key, _, _| {
             if key == Key::Escape {
-                OpenMenu::set(None);
+                ActiveOverlay::set(None);
             }
 
             Propagation::Stop
         });
 
-        let model = Overlay { visible: false };
+        let model = ClickOff { visible: false };
         let widgets = view_output!();
 
         ComponentParts { model, widgets }

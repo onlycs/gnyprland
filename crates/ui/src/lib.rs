@@ -1,4 +1,4 @@
-#![feature(error_generic_member_access, decl_macro)]
+#![feature(error_generic_member_access, decl_macro, iter_array_chunks)]
 
 extern crate cfg_if;
 extern crate gnyprland_relay;
@@ -10,10 +10,12 @@ extern crate notify;
 extern crate relm4;
 extern crate smol;
 extern crate thiserror;
+extern crate zbus;
 
 mod bar;
+mod center_menu;
 mod css;
-mod menu;
+mod overlays;
 mod prelude;
 
 use bar::Bar;

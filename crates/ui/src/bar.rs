@@ -11,7 +11,7 @@ use relm4::gtk::{gdk::Display, CssProvider};
 use window::ActiveWindow;
 use workspace::ActiveWorkspace;
 
-use crate::{css, menu, prelude::*};
+use crate::{css, overlays, prelude::*};
 
 const HEIGHT: i32 = 57;
 
@@ -124,7 +124,7 @@ impl SimpleComponent for Bar {
         })
         .detach();
 
-        menu::attach_windows();
+        overlays::attach_windows();
 
         ComponentParts { model, widgets }
     }

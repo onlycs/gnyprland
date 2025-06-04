@@ -1,6 +1,6 @@
 use chrono::{DateTime as DateTimeData, Local, Timelike};
 
-use crate::{menu::open::OpenMenu, prelude::*};
+use crate::{overlays::active::ActiveOverlay, prelude::*};
 
 fn poll_datetime(mut callback: impl FnMut(DateTimeData<Local>) + Send + 'static) {
     thread::spawn(move || loop {
@@ -36,13 +36,13 @@ impl SimpleComponent for DateTime {
             #[watch]
             set_css_classes: css!["element", "open" if model.open],
             connect_clicked: move |_| {
-                OpenMenu::set(Some(OpenMenu::Calendar))
+                ActiveOverlay::set(Some(ActiveOverlay::Center))
             },
 
 
             gtk::Label {
                 #[watch]
-                set_label: &model.time.format("%A, %b %d\t%l:%M %p").to_string(),
+                set_label: &model.time.format("%A, %b %d  %l:%M %p").to_string(),
                 #[watch]
                 set_css_classes: css!["text text-lg"],
             },
@@ -59,8 +59,8 @@ impl SimpleComponent for DateTime {
             open: false,
         };
 
-        OpenMenu::on_change(sender.input_sender(), |open| {
-            Message::Open(open == Some(OpenMenu::Calendar))
+        ActiveOverlay::on_change(sender.input_sender(), |open| {
+            Message::Open(open == Some(ActiveOverlay::Center))
         });
 
         poll_datetime(clone!(
